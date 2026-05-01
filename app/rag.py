@@ -1,6 +1,6 @@
 # app/rag.py
 from pypdf import PdfReader
-from .vector_memory import VectorMemory   # ← Fixed import
+from .vector_memory import VectorMemory
 
 vector_memory = VectorMemory()
 
@@ -13,10 +13,13 @@ def process_document(file_path: str, filename: str):
             with open(file_path, 'r', encoding='utf-8') as f:
                 text = f.read()
 
-        chunks = [text[i:i+600] for i in range(0, len(text), 600)]
+        # Chunk into memory clips
+        chunk_size = 600
+        chunks = [text[i:i+chunk_size] for i in range(0, len(text), chunk_size)]
+        
         for chunk in chunks:
             if chunk.strip():
-                vector_memory.add_memory(chunk, {"source": filename})
+                vector_memory.add_memory(chunk, {"source": filename, "type": "document"})
 
         return f"✅ Processed {filename} — {len(chunks)} clips added to memory."
     except Exception as e:
