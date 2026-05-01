@@ -12,7 +12,19 @@
             background: #0f0f0f; 
             color: #fff; 
         }
-        h1 { text-align: center; margin-bottom: 20px; }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .logo {
+            max-height: 110px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+        }
+        h1 { 
+            text-align: center; 
+            margin-bottom: 10px; 
+        }
         #chat { 
             height: 70vh; 
             overflow-y: auto; 
@@ -49,10 +61,16 @@
     </style>
 </head>
 <body>
+    <div class="header">
+        <img src="/static/images/Code%20Clipper%20Logo-01.jpg" 
+             alt="Code Clipper Logo" 
+             class="logo">
+    </div>
+
     <h1>ClipperAI — Personal Brainstorming Agent</h1>
     
     <div style="margin-bottom: 15px;">
-        <input type="file" id="fileInput" accept=".pdf,.txt">
+        <input type="file" id="fileInput" accept=".pdf,.txt,.jpg,.jpeg,.png">
         <button onclick="uploadFile()">Upload Document</button>
     </div>
 
@@ -109,14 +127,13 @@
                     body: formData
                 });
                 const data = await res.json();
-                addMessage(data.message || "File processed", false);
+                addMessage(data.message || "File received", false);
                 fileInput.value = '';
             } catch (e) {
                 addMessage("❌ Upload failed", false);
             }
         }
 
-        // Send message with Enter key
         document.getElementById('userInput').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') sendMessage();
         });
