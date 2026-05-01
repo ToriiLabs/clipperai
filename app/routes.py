@@ -21,10 +21,6 @@ def before_request():
 from .ai_model import load_model
 load_model()
 
-@bp.route('/')
-def home():
-    return render_template('index.html')
-
 @bp.route('/api/chat', methods=['POST'])
 def chat():
     try:
@@ -35,12 +31,16 @@ def chat():
         if not user_message:
             return jsonify({"error": "Message is required"}), 400
 
-        response = generate_response(user_message, session_id)
+        # Use agent instead of direct call
+        from .agent import agent
+        result = agent.invoke({"messages": [user_message]})
+        response = result["messages"][-1]
+
         return jsonify({"response": response, "session_id": session_id})
     except Exception as e:
         logger.error(f"Chat error: {e}")
         return jsonify({"error": "An error occurred."}), 500
-
+        
 @bp.route('/api/upload', methods=['POST'])
 def upload_document():
     try:
