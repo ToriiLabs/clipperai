@@ -11,3 +11,4 @@ langchain-huggingface
 langgraph
 langchain
 langchain-core
+accelerate
