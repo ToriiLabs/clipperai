@@ -3,19 +3,18 @@ import torch
 import logging
 from .config import Config
 from .models import VectorMemory, Conversation, db
-from flask import current_app
 
 logger = logging.getLogger(__name__)
 
 model_info = {'model': None, 'tokenizer': None, 'pipeline': None}
-vector_memory = VectorMemory()   # We'll fix this later if it crashes
+vector_memory = VectorMemory()
 
 
 def load_model():
     if model_info['pipeline']:
         return
     try:
-        logger.info(f"Loading {Config.MODEL_PATH} ... (This may take 5-15 minutes on first run)")
+        logger.info(f"Loading {Config.MODEL_PATH} ... (This may take 5-15 minutes the first time)")
 
         model = AutoModelForCausalLM.from_pretrained(
             Config.MODEL_PATH,
@@ -53,15 +52,12 @@ def generate_response(user_message: str, session_id: str = "default") -> str:
         if not model_info['pipeline']:
             load_model()
 
-        # Get past memories
         past_memories = vector_memory.search_memory(user_message, n_results=4)
         memory_context = "\n".join(past_memories) if past_memories else ""
 
-        # Better prompt for Qwen
         prompt = f"""<|im_start|>system
 You are ClipperAI, a helpful, creative, and honest brainstorming assistant.
 Always start your response with the safety disclaimer.
-
 <|im_end|>
 <|im_start|>user
 Previous relevant context:
@@ -72,7 +68,6 @@ Previous relevant context:
 <|im_start|>assistant
 """
 
-        # Generate response
         outputs = model_info['pipeline'](
             prompt,
             max_new_tokens=512,
@@ -84,13 +79,9 @@ Previous relevant context:
 
         response = outputs[0]['generated_text'].split("<|im_start|>assistant")[-1].strip()
 
-        # Save to database
+        # Save conversation
         try:
-            conv = Conversation(
-                session_id=session_id,
-                user_message=user_message,
-                ai_response=response
-            )
+            conv = Conversation(session_id=session_id, user_message=user_message, ai_response=response)
             db.session.add(conv)
             db.session.commit()
         except:
