@@ -34,7 +34,7 @@ def chat():
         if not user_message:
             return jsonify({"error": "Message is required"}), 400
 
-        # Agent call
+        # Use LangGraph agent
         result = agent.invoke({"messages": [user_message]})
         response = result["messages"][-1]
 
