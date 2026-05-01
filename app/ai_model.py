@@ -30,6 +30,8 @@ def load_model():
             trust_remote_code=True,
             low_cpu_mem_usage=Config.LOW_CPU_MEM_USAGE,
             offload_folder=Config.OFFLOAD_FOLDER,
+            load_in_4bit=True,                    # 4-bit quantization for lower memory
+            bnb_4bit_compute_dtype=Config.TORCH_DTYPE,
         )
 
         tokenizer = AutoTokenizer.from_pretrained(Config.MODEL_PATH, trust_remote_code=True)
@@ -82,7 +84,7 @@ Question: {user_message}
 
         outputs = pipe(
             prompt,
-            max_new_tokens=512,
+            max_new_tokens=256,      # shorter for speed & lower memory
             temperature=0.7,
             top_p=0.9,
             do_sample=True,
