@@ -9,12 +9,6 @@ logger = logging.getLogger(__name__)
 model_info = {'model': None, 'tokenizer': None, 'pipeline': None}
 
 
-def get_vector_memory():
-    """Lazy load VectorMemory to avoid startup crashes"""
-    from .models import VectorMemory
-    return VectorMemory
-
-
 def load_model():
     if model_info['pipeline']:
         return
@@ -57,21 +51,14 @@ def generate_response(user_message: str, session_id: str = "default") -> str:
         if not model_info['pipeline']:
             load_model()
 
-        # Lazy memory access
-        VectorMemory = get_vector_memory()
-        vector_memory = VectorMemory()
-
-        past_memories = vector_memory.search_memory(user_message, n_results=4)
-        memory_context = "\n".join(past_memories) if past_memories else ""
+        # No vector memory for now (to avoid crashes)
+        memory_context = ""
 
         prompt = f"""<|im_start|>system
 You are ClipperAI, a helpful, creative, and honest brainstorming assistant.
 Always start your response with the safety disclaimer.
 <|im_end|>
 <|im_start|>user
-Previous relevant context:
-{memory_context}
-
 {user_message}
 <|im_end|>
 <|im_start|>assistant
@@ -88,16 +75,13 @@ Previous relevant context:
 
         response = outputs[0]['generated_text'].split("<|im_start|>assistant")[-1].strip()
 
-        # Save to database
+        # Save to database only
         try:
             conv = Conversation(session_id=session_id, user_message=user_message, ai_response=response)
             db.session.add(conv)
             db.session.commit()
         except:
             db.session.rollback()
-
-        # Save to vector memory
-        vector_memory.add_memory(f"User: {user_message}\nClipperAI: {response}")
 
         return response
 
