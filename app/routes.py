@@ -1,6 +1,8 @@
 from flask import Blueprint, request, jsonify, render_template, current_app
 import logging
 import os
+from .ai_model import load_model, generate_response
+from .models import db
 
 bp = Blueprint('routes', __name__)
 logger = logging.getLogger(__name__)
@@ -8,20 +10,13 @@ logger = logging.getLogger(__name__)
 UPLOAD_FOLDER = 'data/uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-# Lazy imports - moved here so they don't run on startup
-def get_ai_functions():
-    from .ai_model import generate_response, load_model
-    from .agent import agent
-    from .models import db
-    from .rag import process_document
-    return generate_response, load_model, agent, db, process_document
-
 @bp.before_app_request
 def before_request():
     if not hasattr(current_app, 'db_initialized'):
-        from .models import db
         db.create_all()
         current_app.db_initialized = True
+
+load_model()
 
 @bp.route('/')
 def home():
@@ -37,11 +32,7 @@ def chat():
         if not user_message:
             return jsonify({"error": "Message is required"}), 400
 
-        generate_response, _, agent, _, _ = get_ai_functions()
-        
-        result = agent.invoke({"messages": [user_message]})
-        response = result["messages"][-1]
-
+        response = generate_response(user_message, session_id)
         return jsonify({"response": response, "session_id": session_id})
     except Exception as e:
         logger.error(f"Chat error: {e}")
@@ -60,9 +51,8 @@ def upload_document():
         file_path = os.path.join(UPLOAD_FOLDER, file.filename)
         file.save(file_path)
 
-        _, _, _, _, process_document = get_ai_functions()
-        result = process_document(file_path, file.filename)
-        return jsonify({"message": result})
+        # Simple placeholder response for now
+        return jsonify({"message": f"✅ File received: {file.filename} (Processing disabled for stability)"})
     except Exception as e:
         logger.error(f"Upload error: {e}")
         return jsonify({"error": "Upload failed"}), 500
