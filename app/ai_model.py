@@ -2,28 +2,34 @@
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 import torch
 import logging
+import os
 from .config import Config
 from .models import Conversation, db
-from .vector_memory import VectorMemory   # ← Now exists
+from .vector_memory import VectorMemory
 
 logger = logging.getLogger(__name__)
 
 model_info = {'pipeline': None}
 vector_memory = VectorMemory()
 
+# Create offload folder
+os.makedirs(Config.OFFLOAD_FOLDER, exist_ok=True)
+
 def load_model():
     if model_info['pipeline']:
         return model_info['pipeline']
     
     try:
-        logger.info(f"🚀 Loading {Config.MODEL_PATH} (1.5B) — first load can take 3-10 minutes...")
+        logger.info(f"🚀 Loading {Config.MODEL_PATH} (1.5B) — first load can take 5-15 minutes...")
+        logger.info("💡 Using low CPU memory usage + offloading to reduce RAM pressure")
         
         model = AutoModelForCausalLM.from_pretrained(
             Config.MODEL_PATH,
-            torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32,
+            torch_dtype=Config.TORCH_DTYPE,
             device_map="auto",
             trust_remote_code=True,
-            low_cpu_mem_usage=True,
+            low_cpu_mem_usage=Config.LOW_CPU_MEM_USAGE,
+            offload_folder=Config.OFFLOAD_FOLDER,
         )
 
         tokenizer = AutoTokenizer.from_pretrained(Config.MODEL_PATH, trust_remote_code=True)
@@ -34,7 +40,7 @@ def load_model():
             "text-generation",
             model=model,
             tokenizer=tokenizer,
-            device_map="auto"
+            device_map="auto",
         )
 
         model_info['pipeline'] = pipe
@@ -42,15 +48,17 @@ def load_model():
         return pipe
     except Exception as e:
         logger.error(f"❌ Model loading failed: {e}")
+        if "CUDA" in str(e) or "memory" in str(e).lower():
+            logger.error("💡 Out of Memory detected. Close other apps or consider 4-bit quantization next.")
         raise
 
 def generate_response(user_message: str, session_id: str = "default") -> str:
     try:
         pipe = load_model()
 
-        # Retrieve memory
-        memory_clips = vector_memory.search_memory(user_message)
-        memory_context = "\n\n".join(memory_clips) if memory_clips else "No memory clips yet."
+        # Retrieve memory clips
+        memory_clips = vector_memory.search_memory(user_message, n_results=6)
+        memory_context = "\n\n".join(memory_clips) if memory_clips else "No memory clips available yet."
 
         prompt = f"""<|im_start|>system
 You are ClipperAI — a sharp, creative, honest brainstorming partner.
@@ -78,7 +86,7 @@ Question: {user_message}
         full_text = outputs[0]['generated_text']
         response = full_text.split("<|im_start|>assistant")[-1].strip()
 
-        # Save conversation
+        # Save to database
         try:
             conv = Conversation(
                 session_id=session_id,
@@ -95,4 +103,4 @@ Question: {user_message}
 
     except Exception as e:
         logger.error(f"Generation error: {e}")
-        return "❌ The model hit an error. Check terminal for details and try again."
+        return "❌ The model hit an error. Check the terminal logs for details and try again."
