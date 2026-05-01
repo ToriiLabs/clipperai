@@ -5,3 +5,6 @@ torch==2.3.0
 flask-sqlalchemy==3.1.1
 chromadb==0.5.0
 pydantic==2.7.0
+pypdf
+langchain-community
+langchain-huggingface
