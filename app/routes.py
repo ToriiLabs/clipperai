@@ -16,7 +16,7 @@ def before_request():
         db.create_all()
         current_app.db_initialized = True
 
-load_model()
+load_model()   # Load model on startup
 
 @bp.route('/')
 def home():
@@ -51,8 +51,7 @@ def upload_document():
         file_path = os.path.join(UPLOAD_FOLDER, file.filename)
         file.save(file_path)
 
-        # Simple placeholder response for now
-        return jsonify({"message": f"✅ File received: {file.filename} (Processing disabled for stability)"})
+        return jsonify({"message": f"✅ File received: {file.filename} (processing coming soon)"})
     except Exception as e:
         logger.error(f"Upload error: {e}")
         return jsonify({"error": "Upload failed"}), 500
