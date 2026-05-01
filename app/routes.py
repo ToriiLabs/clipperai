@@ -1,7 +1,9 @@
+# app/routes.py
 from flask import Blueprint, request, jsonify, render_template, current_app
 import logging
 import os
-from .ai_model import load_model, generate_response
+from .ai_model import generate_response   # removed load_model import
+from .rag import process_document
 from .models import db
 
 bp = Blueprint('routes', __name__)
@@ -13,10 +15,9 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 @bp.before_app_request
 def before_request():
     if not hasattr(current_app, 'db_initialized'):
-        db.create_all()
-        current_app.db_initialized = True
-
-load_model()   # Load model on startup
+        with current_app.app_context():
+            db.create_all()
+            current_app.db_initialized = True
 
 @bp.route('/')
 def home():
@@ -36,7 +37,7 @@ def chat():
         return jsonify({"response": response, "session_id": session_id})
     except Exception as e:
         logger.error(f"Chat error: {e}")
-        return jsonify({"error": "An error occurred. Please try again."}), 500
+        return jsonify({"error": "An error occurred."}), 500
 
 @bp.route('/api/upload', methods=['POST'])
 def upload_document():
@@ -51,7 +52,8 @@ def upload_document():
         file_path = os.path.join(UPLOAD_FOLDER, file.filename)
         file.save(file_path)
 
-        return jsonify({"message": f"✅ File received: {file.filename} (processing coming soon)"})
+        result = process_document(file_path, file.filename)
+        return jsonify({"message": result})
     except Exception as e:
         logger.error(f"Upload error: {e}")
         return jsonify({"error": "Upload failed"}), 500
