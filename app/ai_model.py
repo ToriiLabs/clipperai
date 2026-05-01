@@ -2,12 +2,17 @@ from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 import torch
 import logging
 from .config import Config
-from .models import VectorMemory, Conversation, db
+from .models import Conversation, db
 
 logger = logging.getLogger(__name__)
 
 model_info = {'model': None, 'tokenizer': None, 'pipeline': None}
-vector_memory = VectorMemory()
+
+
+def get_vector_memory():
+    """Lazy load VectorMemory to avoid startup crashes"""
+    from .models import VectorMemory
+    return VectorMemory
 
 
 def load_model():
@@ -52,6 +57,10 @@ def generate_response(user_message: str, session_id: str = "default") -> str:
         if not model_info['pipeline']:
             load_model()
 
+        # Lazy memory access
+        VectorMemory = get_vector_memory()
+        vector_memory = VectorMemory()
+
         past_memories = vector_memory.search_memory(user_message, n_results=4)
         memory_context = "\n".join(past_memories) if past_memories else ""
 
@@ -79,7 +88,7 @@ Previous relevant context:
 
         response = outputs[0]['generated_text'].split("<|im_start|>assistant")[-1].strip()
 
-        # Save conversation
+        # Save to database
         try:
             conv = Conversation(session_id=session_id, user_message=user_message, ai_response=response)
             db.session.add(conv)
