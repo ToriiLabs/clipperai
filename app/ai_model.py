@@ -48,11 +48,18 @@ def generate_response(user_message: str, session_id: str = "default") -> str:
         if not model_info['pipeline']:
             load_model()
 
-        # Retrieve relevant memories
         past_memories = vector_memory.search_memory(user_message, n_results=4)
         memory_context = "\n".join(past_memories) if past_memories else ""
 
-        prompt = f"""Previous relevant context:
+        # SAFETY + DISCLAIMER PROMPT
+        prompt = f"""You are ClipperAI, a helpful brainstorming assistant.
+IMPORTANT RULES:
+- Always start your response with: "⚠️ This is AI-generated suggestion only. Not professional, financial, or legal advice. Verify with experts."
+- Never give direct business, legal, tax, or medical advice.
+- If the question is high-risk, say you recommend consulting a professional.
+- Base answers on provided context when possible.
+
+Previous relevant context:
 {memory_context}
 
 User: {user_message}
