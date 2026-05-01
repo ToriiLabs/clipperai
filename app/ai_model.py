@@ -48,7 +48,7 @@ def generate_response(user_message: str, session_id: str = "default") -> str:
         if not model_info['pipeline']:
             load_model()
 
-        # Semantic memory search
+        # Retrieve relevant memories
         past_memories = vector_memory.search_memory(user_message, n_results=4)
         memory_context = "\n".join(past_memories) if past_memories else ""
 
