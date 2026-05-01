@@ -9,7 +9,7 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     MAX_HISTORY = 20
-    MODEL_PATH = 'Qwen/Qwen2.5-7B-Instruct'
+    MODEL_PATH = 'Qwen/Qwen2.5-1.5B-Instruct'
     HUGGINGFACE_API_KEY = os.environ.get("HUGGINGFACE_API_KEY")
     
     # Optional: Make sessions last longer
