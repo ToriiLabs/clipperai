@@ -60,20 +60,25 @@ def generate_response(user_message: str, session_id: str = "default") -> str:
         memory_clips = vector_memory.search_memory(user_message, n_results=6)
         memory_context = "\n\n".join(memory_clips) if memory_clips else "No memory clips available yet."
 
-        prompt = f"""<|im_start|>system
+                prompt = f"""<|im_start|>system
 You are ClipperAI — a sharp, creative, honest brainstorming partner.
-Always begin your reply with: "⚠️ Safety Note: This is for brainstorming only."
-Use the memory clips below when relevant.
+
+CRITICAL RULES:
+- ALWAYS prioritize and heavily use the Memory clips from uploaded documents below.
+- If the clips are relevant to the question, base your entire answer on them.
+- Only use general knowledge if the clips are empty or completely irrelevant.
+- Keep responses clear, concise, and actionable. No repetitive disclaimers.
+
 <|im_end|>
 <|im_start|>user
-Memory clips:
+Memory clips from uploaded documents:
 {memory_context}
 
 Question: {user_message}
 <|im_end|>
 <|im_start|>assistant
 """
-
+        
         outputs = pipe(
             prompt,
             max_new_tokens=512,
