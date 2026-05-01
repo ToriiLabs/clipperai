@@ -30,8 +30,6 @@ def load_model():
             trust_remote_code=True,
             low_cpu_mem_usage=Config.LOW_CPU_MEM_USAGE,
             offload_folder=Config.OFFLOAD_FOLDER,
-            load_in_4bit=True,                    # 4-bit quantization for lower memory
-            bnb_4bit_compute_dtype=Config.TORCH_DTYPE,
         )
 
         tokenizer = AutoTokenizer.from_pretrained(Config.MODEL_PATH, trust_remote_code=True)
@@ -58,23 +56,17 @@ def generate_response(user_message: str, session_id: str = "default") -> str:
     try:
         pipe = load_model()
 
-        # Retrieve memory clips (increased for better coverage)
-        memory_clips = vector_memory.search_memory(user_message, n_results=8)
-        memory_context = "\n\n".join(memory_clips) if memory_clips else "No relevant memory clips found for this query."
+        # Retrieve memory clips
+        memory_clips = vector_memory.search_memory(user_message, n_results=6)
+        memory_context = "\n\n".join(memory_clips) if memory_clips else "No memory clips available yet."
 
         prompt = f"""<|im_start|>system
 You are ClipperAI — a sharp, creative, honest brainstorming partner.
-
-CRITICAL RULES:
-- ALWAYS base your answer primarily on the Memory clips below.
-- If the clips contain relevant information, use them heavily and reference them.
-- Do NOT fall back to general knowledge unless the clips are empty or irrelevant.
-- Always begin your reply with: "⚠️ Safety Note: This is for brainstorming only."
-- Keep answers clear and actionable.
-
+Always begin your reply with: "⚠️ Safety Note: This is for brainstorming only."
+Use the memory clips below when relevant.
 <|im_end|>
 <|im_start|>user
-Memory clips from uploaded documents:
+Memory clips:
 {memory_context}
 
 Question: {user_message}
@@ -84,11 +76,11 @@ Question: {user_message}
 
         outputs = pipe(
             prompt,
-            max_new_tokens=256,      # shorter for speed & lower memory
-            temperature=0.7,
+            max_new_tokens=512,
+            temperature=0.75,
             top_p=0.9,
             do_sample=True,
-            repetition_penalty=1.1
+            repetition_penalty=1.12
         )
 
         full_text = outputs[0]['generated_text']
