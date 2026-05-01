@@ -19,9 +19,34 @@
 <body>
     <h1>ClipperAI — Personal Brainstorming Agent</h1>
     <div id="chat"></div>
-    <input type="text" id="userInput" placeholder="Type your message...">
+    <div style="margin: 15px 0;">
+    <input type="file" id="fileInput" accept=".pdf,.txt">
+    <button onclick="uploadFile()">Upload Document</button>
+</div>    <input type="text" id="userInput" placeholder="Type your message...">
     <button onclick="sendMessage()">Send</button>
+async function uploadFile() {
+    const fileInput = document.getElementById('fileInput');
+    const file = fileInput.files[0];
+    if (!file) {
+        alert("Please select a file first");
+        return;
+    }
 
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+        const res = await fetch('/api/upload', {
+            method: 'POST',
+            body: formData
+        });
+        const data = await res.json();
+        addMessage(data.message, false);
+        fileInput.value = ''; // reset
+    } catch (e) {
+        addMessage("❌ Upload failed", false);
+    }
+}    
     <script>
         let sessionId = "default";
 
