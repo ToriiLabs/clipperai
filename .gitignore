@@ -10,3 +10,6 @@ venv/
 .DS_Store
 *.log
 models/
+data/
+__pycache__/
+*.db
