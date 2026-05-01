@@ -56,17 +56,23 @@ def generate_response(user_message: str, session_id: str = "default") -> str:
     try:
         pipe = load_model()
 
-        # Retrieve memory clips
-        memory_clips = vector_memory.search_memory(user_message, n_results=6)
-        memory_context = "\n\n".join(memory_clips) if memory_clips else "No memory clips available yet."
+        # Retrieve memory clips (increased for better coverage)
+        memory_clips = vector_memory.search_memory(user_message, n_results=8)
+        memory_context = "\n\n".join(memory_clips) if memory_clips else "No relevant memory clips found for this query."
 
         prompt = f"""<|im_start|>system
 You are ClipperAI — a sharp, creative, honest brainstorming partner.
-Always begin your reply with: "⚠️ Safety Note: This is for brainstorming only."
-Use the memory clips below when relevant.
+
+CRITICAL RULES:
+- ALWAYS base your answer primarily on the Memory clips below.
+- If the clips contain relevant information, use them heavily and reference them.
+- Do NOT fall back to general knowledge unless the clips are empty or irrelevant.
+- Always begin your reply with: "⚠️ Safety Note: This is for brainstorming only."
+- Keep answers clear and actionable.
+
 <|im_end|>
 <|im_start|>user
-Memory clips:
+Memory clips from uploaded documents:
 {memory_context}
 
 Question: {user_message}
@@ -77,10 +83,10 @@ Question: {user_message}
         outputs = pipe(
             prompt,
             max_new_tokens=512,
-            temperature=0.75,
+            temperature=0.7,
             top_p=0.9,
             do_sample=True,
-            repetition_penalty=1.12
+            repetition_penalty=1.1
         )
 
         full_text = outputs[0]['generated_text']
