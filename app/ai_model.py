@@ -57,10 +57,10 @@ def generate_response(user_message: str, session_id: str = "default") -> str:
         pipe = load_model()
 
         # Retrieve memory clips
-        memory_clips = vector_memory.search_memory(user_message, n_results=6)
-        memory_context = "\n\n".join(memory_clips) if memory_clips else "No memory clips available yet."
+        memory_clips = vector_memory.search_memory(user_message, n_results=8)
+        memory_context = "\n\n".join(memory_clips) if memory_clips else "No relevant memory clips found for this query."
 
-                prompt = f"""<|im_start|>system
+        prompt = f"""<|im_start|>system
 You are ClipperAI — a sharp, creative, honest brainstorming partner.
 
 CRITICAL RULES:
@@ -78,7 +78,7 @@ Question: {user_message}
 <|im_end|>
 <|im_start|>assistant
 """
-        
+
         outputs = pipe(
             prompt,
             max_new_tokens=512,
