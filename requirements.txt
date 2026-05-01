@@ -8,3 +8,6 @@ pydantic==2.7.0
 pypdf
 langchain-community
 langchain-huggingface
+langgraph
+langchain
+langchain-core
