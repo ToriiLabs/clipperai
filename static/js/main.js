@@ -16,6 +16,7 @@ function addMessage(speaker, content) {
     `;
     chatDiv.appendChild(div);
     chatDiv.scrollTop = chatDiv.scrollHeight;
+    return div;
 }
 
 async function sendMessage() {
@@ -35,13 +36,12 @@ async function sendMessage() {
 
     const reader = res.body.getReader();
     const decoder = new TextDecoder();
-    let aiText = '';
 
-    const aiDiv = document.createElement('div');
-    aiDiv.className = 'flex justify-start message';
-    aiDiv.innerHTML = `<div class="chat-bubble-ai px-6 py-4"><strong class="block text-xs opacity-75 mb-1">Clipper</strong><div class="prose prose-invert"></div></div>`;
-    chatDiv.appendChild(aiDiv);
-    const textContainer = aiDiv.querySelector('.prose');
+    let aiText = '';
+    let thinkingDiv = null;
+    let reflectingDiv = null;
+    let finalDiv = null;
+    let textContainer = null;
 
     while (true) {
         const { value, done } = await reader.read();
@@ -49,13 +49,33 @@ async function sendMessage() {
 
         const chunk = decoder.decode(value);
         const lines = chunk.split('\n');
+
         for (const line of lines) {
             if (line.startsWith('data: ')) {
                 try {
                     const data = JSON.parse(line.slice(6));
-                    aiText += data.token;
-                    textContainer.textContent = aiText;
-                    chatDiv.scrollTop = chatDiv.scrollHeight;
+
+                    if (data.phase === 'thinking') {
+                        thinkingDiv = addMessage('Clipper', data.text);
+                    } else if (data.phase === 'reflecting') {
+                        if (thinkingDiv) chatDiv.removeChild(thinkingDiv);
+                        reflectingDiv = addMessage('Clipper', data.text);
+                    } else if (data.token) {
+                        if (reflectingDiv) {
+                            chatDiv.removeChild(reflectingDiv);
+                            reflectingDiv = null;
+                        }
+                        if (!finalDiv) {
+                            finalDiv = document.createElement('div');
+                            finalDiv.className = 'flex justify-start message';
+                            finalDiv.innerHTML = `<div class="chat-bubble-ai px-6 py-4"><strong class="block text-xs opacity-75 mb-1">Clipper</strong><div class="prose prose-invert"></div></div>`;
+                            chatDiv.appendChild(finalDiv);
+                            textContainer = finalDiv.querySelector('.prose');
+                        }
+                        aiText += data.token;
+                        textContainer.textContent = aiText;
+                        chatDiv.scrollTop = chatDiv.scrollHeight;
+                    }
                 } catch (e) {}
             }
         }
@@ -64,6 +84,7 @@ async function sendMessage() {
     if (waveBg) waveBg.classList.remove('thinking');
 }
 
+// Load sidebar
 async function loadSidebar() {
     const histRes = await fetch('/api/history');
     const hist = await histRes.json();
@@ -106,4 +127,4 @@ clearAll = async () => {
 
 // Boot
 loadSidebar();
-console.log('%cClipper UI ready', 'color:#3b82f6;font-weight:500');
+console.log('%cClipper UI + Agentic Thinking Ready!', 'color:#3b82f6;font-weight:500');
