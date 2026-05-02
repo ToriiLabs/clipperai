@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ClipperAI • Brainstorm Agent</title>
+    <title>Clipper</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
     <style>
@@ -19,7 +19,7 @@
             inset: 0;
             pointer-events: none;
             z-index: -1;
-            opacity: 0.08; /* extremely subtle */
+            opacity: 0.08;
             overflow: hidden;
         }
         #wave-bg svg {
@@ -27,9 +27,8 @@
         }
         @keyframes waveDrift {
             0%   { transform: translateX(0); }
-            100% { transform: translateX(-180px); } /* very slow, gentle drift */
+            100% { transform: translateX(-180px); }
         }
-        /* Grok-style "meter" pulse while thinking/streaming */
         #wave-bg.thinking svg {
             animation-duration: 13s;
             filter: brightness(1.12);
@@ -44,62 +43,53 @@
     <!-- SUBTLE HOKUSAI WAVE BACKGROUND -->
     <div id="wave-bg">
         <svg width="100%" height="100%" viewBox="0 0 1440 900" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-            <!-- Main curling wave (deep ocean) -->
-            <path id="wave1" d="M0 620 Q360 420 720 580 Q1080 720 1440 540 L1440 900 L0 900 Z" 
-                  fill="none" stroke="#0f172a" stroke-width="85" stroke-opacity="0.45"/>
-            <!-- Secondary wave + foam (Hokusai crest feel) -->
-            <path id="wave2" d="M0 660 Q300 500 720 640 Q1140 770 1440 590 L1440 900 L0 900 Z" 
-                  fill="none" stroke="#1e40af" stroke-width="45" stroke-opacity="0.28"/>
-            <!-- Tiny foam details (iconic Hokusai spray) -->
-            <path id="foam" d="M180 590 Q260 530 340 580 Q420 520 500 575" 
-                  fill="none" stroke="#60a5fa" stroke-width="14" stroke-opacity="0.18"/>
+            <path id="wave1" d="M0 620 Q360 420 720 580 Q1080 720 1440 540 L1440 900 L0 900 Z" fill="none" stroke="#0f172a" stroke-width="85" stroke-opacity="0.45"/>
+            <path id="wave2" d="M0 660 Q300 500 720 640 Q1140 770 1440 590 L1440 900 L0 900 Z" fill="none" stroke="#1e40af" stroke-width="45" stroke-opacity="0.28"/>
+            <path id="foam" d="M180 590 Q260 530 340 580 Q420 520 500 575" fill="none" stroke="#60a5fa" stroke-width="14" stroke-opacity="0.18"/>
         </svg>
     </div>
 
-    <!-- SIDEBAR (exactly as you had it) -->
+    <!-- SIDEBAR -->
     <div class="w-80 bg-gray-900 border-r border-gray-800 flex flex-col relative z-10">
         <div class="p-4 border-b border-gray-800 flex items-center gap-3">
             <i class="fa-solid fa-brain text-blue-500 text-2xl"></i>
-            <h1 class="text-2xl font-semibold tracking-tight">ClipperAI</h1>
+            <h1 class="text-2xl font-semibold tracking-tight">Clipper</h1>
         </div>
 
-        <!-- New Session -->
         <div onclick="newSession()" class="mx-4 mt-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl py-3 px-4 flex items-center justify-center gap-2 cursor-pointer transition-colors">
             <i class="fa-solid fa-plus"></i>
-            <span class="font-medium">New Brainstorm Session</span>
+            <span class="font-medium">New Conversation</span>
         </div>
 
-        <div class="px-4 py-2 text-xs uppercase tracking-widest text-gray-400 mt-6">Recent Sessions</div>
+        <div class="px-4 py-2 text-xs uppercase tracking-widest text-gray-400 mt-6">Conversations</div>
         <div id="history-list" class="flex-1 overflow-y-auto px-2 space-y-1 text-sm"></div>
 
-        <div class="px-4 py-2 text-xs uppercase tracking-widest text-gray-400">Clips &amp; Memory</div>
+        <div class="px-4 py-2 text-xs uppercase tracking-widest text-gray-400">Memory</div>
         <div id="clips-list" class="flex-1 overflow-y-auto px-4 space-y-3 text-sm"></div>
 
         <div class="p-4 border-t border-gray-800 text-xs text-gray-500 flex items-center justify-between">
-            <span>32-core • Local • Private</span>
             <span onclick="clearAll()" class="cursor-pointer hover:text-white">Clear All</span>
         </div>
     </div>
 
-    <!-- MAIN CHAT (exactly as you had it) -->
+    <!-- MAIN CHAT -->
     <div class="flex-1 flex flex-col relative z-10">
         <div class="h-14 border-b border-gray-800 flex items-center px-6 justify-between bg-gray-900">
             <div class="flex items-center gap-3">
-                <span id="session-title" class="font-semibold text-lg">Untitled Brainstorm</span>
+                <span id="session-title" class="font-semibold text-lg">New Conversation</span>
             </div>
             <button onclick="clearChat()" class="flex items-center gap-2 text-gray-400 hover:text-white">
                 <i class="fa-solid fa-trash"></i>
-                <span class="text-sm">Clear chat</span>
+                <span class="text-sm">Clear</span>
             </button>
         </div>
 
         <div id="chat" class="flex-1 overflow-y-auto p-6 space-y-8 bg-gray-950"></div>
 
-        <!-- Input -->
         <div class="p-4 border-t border-gray-800 bg-gray-900">
             <div class="flex gap-3">
                 <input id="input" type="text"
-                       placeholder="Describe your idea or ask the agent..."
+                       placeholder="Type your message..."
                        class="flex-1 bg-gray-800 border border-gray-700 focus:border-blue-500 rounded-3xl px-6 py-4 outline-none text-lg">
                 <button id="send" class="bg-blue-600 hover:bg-blue-700 w-12 h-12 rounded-3xl flex items-center justify-center">
                     <i class="fa-solid fa-paper-plane"></i>
