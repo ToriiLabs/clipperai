@@ -1,7 +1,7 @@
 const input = document.getElementById('input');
 const sendButton = document.getElementById('send');
 const chatDiv = document.getElementById('chat');
-const waveBg = document.getElementById('wave-bg');   // ← Hokusai wave reference
+const waveBg = document.getElementById('wave-bg');
 
 let currentSession = 'default';
 
@@ -25,7 +25,6 @@ async function sendMessage() {
     addMessage('You', message);
     input.value = '';
 
-    // === TRIGGER HOKUSAI WAVE "METER" ANIMATION (like Grok) ===
     if (waveBg) waveBg.classList.add('thinking');
 
     const res = await fetch('/api/stream', {
@@ -62,20 +61,16 @@ async function sendMessage() {
         }
     }
 
-    // === END OF STREAMING → RETURN WAVE TO CALM STATE ===
     if (waveBg) waveBg.classList.remove('thinking');
 }
 
-// Load sidebar on boot
 async function loadSidebar() {
-    // History
     const histRes = await fetch('/api/history');
     const hist = await histRes.json();
     document.getElementById('history-list').innerHTML = hist.sessions.map(s => 
         `<div class="px-4 py-2 hover:bg-gray-800 rounded-xl cursor-pointer">${s}</div>`
     ).join('');
 
-    // Clips
     const clipsRes = await fetch('/api/clips');
     const clipsData = await clipsRes.json();
     document.getElementById('clips-list').innerHTML = clipsData.clips.map(c => 
@@ -94,11 +89,11 @@ input.addEventListener('keypress', e => {
 newSession = () => { 
     chatDiv.innerHTML = ''; 
     currentSession = Date.now().toString(); 
-    document.getElementById('session-title').textContent = 'New Brainstorm Session'; 
+    document.getElementById('session-title').textContent = 'New Conversation'; 
 };
 
 clearChat = () => { 
-    if (confirm('Clear chat?')) chatDiv.innerHTML = ''; 
+    if (confirm('Clear this conversation?')) chatDiv.innerHTML = ''; 
 };
 
 clearAll = async () => { 
@@ -111,4 +106,4 @@ clearAll = async () => {
 
 // Boot
 loadSidebar();
-console.log('%c✅ ClipperAI Pro UI + Hokusai Wave Ready!', 'color:#3b82f6;font-weight:bold');
+console.log('%cClipper UI ready', 'color:#3b82f6;font-weight:500');
