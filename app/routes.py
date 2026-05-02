@@ -3,7 +3,6 @@ from flask import Blueprint, request, jsonify, Response, render_template, curren
 import logging
 import os
 import json
-import asyncio
 from .ai_model import generate_with_reflection, get_llm
 from .rag import process_document
 from .models import db, Conversation
@@ -41,10 +40,8 @@ def stream_chat():
             yield f"data: {json.dumps({'phase': 'thinking', 'text': 'Thinking step-by-step...'})}\n\n"
             yield f"data: {json.dumps({'phase': 'reflecting', 'text': 'Reflecting and polishing...'})}\n\n"
 
-            # Correctly await the async function
-            final_text = asyncio.run(generate_with_reflection(user_message, session_id))
+            final_text = generate_with_reflection(user_message, session_id)
 
-            # Stream the final answer
             for token in final_text.split():
                 yield f"data: {json.dumps({'token': token + ' '})}\n\n"
 
