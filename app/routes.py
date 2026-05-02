@@ -3,6 +3,7 @@ from flask import Blueprint, request, jsonify, Response, render_template, curren
 import logging
 import os
 import json
+import asyncio
 from .ai_model import generate_with_reflection, get_llm
 from .rag import process_document
 from .models import db, Conversation
@@ -40,10 +41,9 @@ def stream_chat():
             yield f"data: {json.dumps({'phase': 'thinking', 'text': 'Thinking step-by-step...'})}\n\n"
             yield f"data: {json.dumps({'phase': 'reflecting', 'text': 'Reflecting and polishing...'})}\n\n"
 
-            # Run the full reflection (this is where the DB save happens safely)
-            final_text = generate_with_reflection(user_message, session_id)
+            # This is the fix: properly await the async function
+            final_text = asyncio.run(generate_with_reflection(user_message, session_id))
 
-            # Stream the final polished answer
             for token in final_text.split():
                 yield f"data: {json.dumps({'token': token + ' '})}\n\n"
 
@@ -53,7 +53,6 @@ def stream_chat():
 
     return Response(generate(), mimetype='text/event-stream')
 
-# Sidebar endpoints
 @bp.route('/api/history', methods=['GET'])
 def get_history():
     sessions = Conversation.query.with_entities(Conversation.session_id).distinct().all()
