@@ -29,7 +29,6 @@ def home():
 
 @bp.route('/api/chat', methods=['POST'])
 def chat():
-    # Old non-streaming endpoint (kept for compatibility)
     data = request.json
     user_message = data.get('message')
     session_id = data.get('session_id', 'default')
@@ -40,7 +39,6 @@ def chat():
 
 @bp.route('/api/stream', methods=['POST'])
 def stream_chat():
-    """Streaming with visible Thinking + Reflecting steps"""
     data = request.json
     user_message = data.get('message')
     session_id = data.get('session_id', 'default')
@@ -50,26 +48,20 @@ def stream_chat():
 
     def generate():
         try:
-            # Phase 1: Thinking
             yield f"data: {json.dumps({'phase': 'thinking', 'text': 'Thinking step-by-step...'})}\n\n"
-            
-            # Phase 2: Reflecting
             yield f"data: {json.dumps({'phase': 'reflecting', 'text': 'Reflecting and polishing...'})}\n\n"
 
-            # Run the smart reflection logic
             final_text = asyncio.run(generate_with_reflection(user_message, session_id))
 
-            # Stream the final polished answer
             for token in final_text.split():
                 yield f"data: {json.dumps({'token': token + ' '})}\n\n"
 
         except Exception as e:
-            logger.error(f"Streaming error: {e}")
-            yield f"data: {json.dumps({'token': 'Sorry, something went wrong.'})}\n\n"
+            logger.error(f"Streaming error: {e}", exc_info=True)
+            yield f"data: {json.dumps({'token': f'Error: {str(e)}'})}\n\n"
 
     return Response(generate(), mimetype='text/event-stream')
 
-# === SIDEBAR ENDPOINTS ===
 @bp.route('/api/history', methods=['GET'])
 def get_history():
     sessions = Conversation.query.with_entities(Conversation.session_id).distinct().all()
@@ -77,7 +69,13 @@ def get_history():
 
 @bp.route('/api/clips', methods=['GET'])
 def get_clips():
-    clips = vector_memory.get_all_memory()
+    try:
+        clips = vector_memory.get_all_memory()
+    except AttributeError:
+        clips = []  # safe fallback if method doesn't exist yet
+    except Exception as e:
+        logger.error(f"Clips error: {e}")
+        clips = []
     return jsonify({"clips": clips})
 
 @bp.route('/api/clear', methods=['POST'])
