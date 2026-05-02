@@ -1,54 +1,93 @@
-<!DOCTYPE html>
-<html lang="en" class="dark">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ClipperAI • Brainstorm Agent</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
-        body { font-family: 'Inter', system-ui, sans-serif; }
-        .chat-bubble-user { background: #3b82f6; color: white; border-radius: 20px 20px 4px 20px; }
-        .chat-bubble-ai { background: #1f2937; border-radius: 20px 20px 20px 4px; }
-        .message { max-width: 80%; animation: fadeIn 0.2s ease; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    </style>
-</head>
-<body class="bg-gray-950 text-gray-100 flex h-screen overflow-hidden">
-    <!-- SIDEBAR -->
-    <div class="w-80 bg-gray-900 border-r border-gray-800 flex flex-col">
-        <div class="p-4 border-b border-gray-800 flex items-center gap-3">
-            <i class="fa-solid fa-brain text-blue-500 text-2xl"></i>
-            <h1 class="text-2xl font-semibold tracking-tight">ClipperAI</h1>
+const input = document.getElementById('input');
+const sendButton = document.getElementById('send');
+const chatDiv = document.getElementById('chat');
+
+function addMessage(speaker, message, className = '') {
+    const div = document.createElement('div');
+    div.className = `flex ${speaker === 'You' ? 'justify-end' : 'justify-start'} message`;
+    div.innerHTML = `
+        <div class="${speaker === 'You' ? 'chat-bubble-user' : 'chat-bubble-ai'} px-6 py-4">
+            <strong class="block text-xs opacity-75 mb-1">${speaker}</strong>
+            <div class="prose prose-invert max-w-none">${message}</div>
         </div>
+    `;
+    chatDiv.appendChild(div);
+    chatDiv.scrollTop = chatDiv.scrollHeight;
+    return div;
+}
 
-        <!-- New Session -->
-        <div onclick="newSession()" class="mx-4 mt-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl py-3 px-4 flex items-center justify-center gap-2 cursor-pointer transition-colors">
-            <i class="fa-solid fa-plus"></i>
-            <span class="font-medium">New Brainstorm Session</span>
-        </div>
+async function sendMessage() {
+    const message = input.value.trim();
+    if (!message) return;
 
-        <div class="px-4 py-2 text-xs uppercase tracking-widest text-gray-400 mt-6">Recent Sessions</div>
-        <div id="history-list" class="flex-1 overflow-y-auto px-2 space-y-1 text-sm"></div>
+    addMessage('You', message);
+    const loadingDiv = addMessage('Clipper', '<i class="fa-solid fa-spinner fa-spin"></i> Thinking...', 'loading');
 
-        <div class="px-4 py-2 text-xs uppercase tracking-widest text-gray-400">Clips &amp; Memory</div>
-        <div id="clips-list" class="flex-1 overflow-y-auto px-4 space-y-3 text-sm"></div>
+    input.value = '';
 
-        <div class="p-4 border-t border-gray-800 text-xs text-gray-500 flex items-center justify-between">
-            <span>32-core • Local • Private</span>
-            <span onclick="clearAll()" class="cursor-pointer hover:text-white">Clear All</span>
-        </div>
-    </div>
+    try {
+        const res = await fetch('/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message })
+        });
 
-    <!-- MAIN CHAT -->
-    <div class="flex-1 flex flex-col">
-        <div class="h-14 border-b border-gray-800 flex items-center px-6 justify-between bg-gray-900">
-            <div class="flex items-center gap-3">
-                <span id="session-title" class="font-semibold text-lg">Untitled Brainstorm</span>
-            </div>
-            <button onclick="clearChat()" class="flex items-center gap-2 text-gray-400 hover:text-white">
-                <i class="fa-solid fa-trash"></i>
-                <span class="text-sm">Clear chat</span>
-            </button>
-       
+        chatDiv.removeChild(loadingDiv); // remove spinner
+
+        if (res.ok) {
+            const data = await res.json();
+            // Type out the response for streaming feel
+            typeOutMessage('Clipper', data.response);
+        } else {
+            addMessage('Error', 'Failed to get response');
+        }
+    } catch (err) {
+        chatDiv.removeChild(loadingDiv);
+        addMessage('Error', err.message);
+    }
+}
+
+// Fake streaming typewriter effect (feels premium)
+function typeOutMessage(speaker, fullText) {
+    const div = addMessage(speaker, '');
+    const textContainer = div.querySelector('.prose');
+    let i = 0;
+    const interval = setInterval(() => {
+        if (i < fullText.length) {
+            textContainer.innerHTML += fullText.charAt(i) === '\n' ? '<br>' : fullText.charAt(i);
+            i++;
+            chatDiv.scrollTop = chatDiv.scrollHeight;
+        } else {
+            clearInterval(interval);
+        }
+    }, 8); // adjust speed if needed
+}
+
+sendButton.addEventListener('click', sendMessage);
+
+input.addEventListener('keypress', e => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+    }
+});
+
+// Placeholder sidebar functions (you can hook these into your existing RAG/clip logic later)
+function newSession() {
+    chatDiv.innerHTML = '';
+    document.getElementById('session-title').textContent = 'New Brainstorm Session';
+}
+
+function clearChat() {
+    if (confirm('Clear this chat?')) chatDiv.innerHTML = '';
+}
+
+function clearAll() {
+    if (confirm('Clear everything?')) {
+        chatDiv.innerHTML = '';
+        // TODO: call your backend clear endpoint
+    }
+}
+
+// Boot
+console.log('%c✅ ClipperAI Pro UI loaded!', 'color:#3b82f6;font-weight:bold');
