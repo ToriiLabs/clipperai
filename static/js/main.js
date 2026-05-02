@@ -2,18 +2,19 @@ const input = document.getElementById('input');
 const sendButton = document.getElementById('send');
 const chatDiv = document.getElementById('chat');
 
-function addMessage(speaker, message, className = '') {
+let currentSession = 'default';
+
+function addMessage(speaker, content) {
     const div = document.createElement('div');
     div.className = `flex ${speaker === 'You' ? 'justify-end' : 'justify-start'} message`;
     div.innerHTML = `
         <div class="${speaker === 'You' ? 'chat-bubble-user' : 'chat-bubble-ai'} px-6 py-4">
             <strong class="block text-xs opacity-75 mb-1">${speaker}</strong>
-            <div class="prose prose-invert max-w-none">${message}</div>
+            <div class="prose prose-invert max-w-none">${content}</div>
         </div>
     `;
     chatDiv.appendChild(div);
     chatDiv.scrollTop = chatDiv.scrollHeight;
-    return div;
 }
 
 async function sendMessage() {
@@ -21,73 +22,70 @@ async function sendMessage() {
     if (!message) return;
 
     addMessage('You', message);
-    const loadingDiv = addMessage('Clipper', '<i class="fa-solid fa-spinner fa-spin"></i> Thinking...', 'loading');
-
     input.value = '';
 
-    try {
-        const res = await fetch('/api/chat', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message })
-        });
+    const eventSource = new EventSource('/api/stream', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message, session_id: currentSession })
+    });  // Wait, actually for POST streaming we use fetch + SSE simulation, but for simplicity:
 
-        chatDiv.removeChild(loadingDiv); // remove spinner
+    // Better: use fetch + readable stream (real SSE)
+    const res = await fetch('/api/stream', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message, session_id: currentSession })
+    });
 
-        if (res.ok) {
-            const data = await res.json();
-            // Type out the response for streaming feel
-            typeOutMessage('Clipper', data.response);
-        } else {
-            addMessage('Error', 'Failed to get response');
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let aiText = '';
+
+    const aiDiv = document.createElement('div');
+    aiDiv.className = 'flex justify-start message';
+    aiDiv.innerHTML = `<div class="chat-bubble-ai px-6 py-4"><strong class="block text-xs opacity-75 mb-1">Clipper</strong><div class="prose prose-invert"></div></div>`;
+    chatDiv.appendChild(aiDiv);
+    const textContainer = aiDiv.querySelector('.prose');
+
+    while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value);
+        const lines = chunk.split('\n');
+        for (const line of lines) {
+            if (line.startsWith('data: ')) {
+                try {
+                    const data = JSON.parse(line.slice(6));
+                    aiText += data.token;
+                    textContainer.textContent = aiText;
+                    chatDiv.scrollTop = chatDiv.scrollHeight;
+                } catch (e) {}
+            }
         }
-    } catch (err) {
-        chatDiv.removeChild(loadingDiv);
-        addMessage('Error', err.message);
     }
 }
 
-// Fake streaming typewriter effect (feels premium)
-function typeOutMessage(speaker, fullText) {
-    const div = addMessage(speaker, '');
-    const textContainer = div.querySelector('.prose');
-    let i = 0;
-    const interval = setInterval(() => {
-        if (i < fullText.length) {
-            textContainer.innerHTML += fullText.charAt(i) === '\n' ? '<br>' : fullText.charAt(i);
-            i++;
-            chatDiv.scrollTop = chatDiv.scrollHeight;
-        } else {
-            clearInterval(interval);
-        }
-    }, 8); // adjust speed if needed
+// Load sidebar on boot
+async function loadSidebar() {
+    // History
+    const histRes = await fetch('/api/history');
+    const hist = await histRes.json();
+    // (populate #history-list — simple version)
+    document.getElementById('history-list').innerHTML = hist.sessions.map(s => `<div class="px-4 py-2 hover:bg-gray-800 rounded-xl cursor-pointer">${s}</div>`).join('');
+
+    // Clips
+    const clipsRes = await fetch('/api/clips');
+    const clipsData = await clipsRes.json();
+    document.getElementById('clips-list').innerHTML = clipsData.clips.map(c => `<div class="bg-gray-800 p-3 rounded-2xl text-sm">${c}</div>`).join('');
 }
 
 sendButton.addEventListener('click', sendMessage);
+input.addEventListener('keypress', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
 
-input.addEventListener('keypress', e => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        sendMessage();
-    }
-});
-
-// Placeholder sidebar functions (you can hook these into your existing RAG/clip logic later)
-function newSession() {
-    chatDiv.innerHTML = '';
-    document.getElementById('session-title').textContent = 'New Brainstorm Session';
-}
-
-function clearChat() {
-    if (confirm('Clear this chat?')) chatDiv.innerHTML = '';
-}
-
-function clearAll() {
-    if (confirm('Clear everything?')) {
-        chatDiv.innerHTML = '';
-        // TODO: call your backend clear endpoint
-    }
-}
+newSession = () => { chatDiv.innerHTML = ''; currentSession = Date.now().toString(); document.getElementById('session-title').textContent = 'New Brainstorm Session'; };
+clearChat = () => { if (confirm('Clear chat?')) chatDiv.innerHTML = ''; };
+clearAll = async () => { if (confirm('Clear everything?')) { await fetch('/api/clear', {method:'POST'}); loadSidebar(); chatDiv.innerHTML = ''; } };
 
 // Boot
-console.log('%c✅ ClipperAI Pro UI loaded!', 'color:#3b82f6;font-weight:bold');
+loadSidebar();
+console.log('%c✅ ClipperAI Pro UI + Ollama Streaming Ready!', 'color:#3b82f6;font-weight:bold');
