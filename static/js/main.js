@@ -1,6 +1,7 @@
 const input = document.getElementById('input');
 const sendButton = document.getElementById('send');
 const chatDiv = document.getElementById('chat');
+const waveBg = document.getElementById('wave-bg');   // ← Hokusai wave reference
 
 let currentSession = 'default';
 
@@ -24,13 +25,9 @@ async function sendMessage() {
     addMessage('You', message);
     input.value = '';
 
-    const eventSource = new EventSource('/api/stream', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message, session_id: currentSession })
-    });  // Wait, actually for POST streaming we use fetch + SSE simulation, but for simplicity:
+    // === TRIGGER HOKUSAI WAVE "METER" ANIMATION (like Grok) ===
+    if (waveBg) waveBg.classList.add('thinking');
 
-    // Better: use fetch + readable stream (real SSE)
     const res = await fetch('/api/stream', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -50,6 +47,7 @@ async function sendMessage() {
     while (true) {
         const { value, done } = await reader.read();
         if (done) break;
+
         const chunk = decoder.decode(value);
         const lines = chunk.split('\n');
         for (const line of lines) {
@@ -63,6 +61,9 @@ async function sendMessage() {
             }
         }
     }
+
+    // === END OF STREAMING → RETURN WAVE TO CALM STATE ===
+    if (waveBg) waveBg.classList.remove('thinking');
 }
 
 // Load sidebar on boot
@@ -70,22 +71,44 @@ async function loadSidebar() {
     // History
     const histRes = await fetch('/api/history');
     const hist = await histRes.json();
-    // (populate #history-list — simple version)
-    document.getElementById('history-list').innerHTML = hist.sessions.map(s => `<div class="px-4 py-2 hover:bg-gray-800 rounded-xl cursor-pointer">${s}</div>`).join('');
+    document.getElementById('history-list').innerHTML = hist.sessions.map(s => 
+        `<div class="px-4 py-2 hover:bg-gray-800 rounded-xl cursor-pointer">${s}</div>`
+    ).join('');
 
     // Clips
     const clipsRes = await fetch('/api/clips');
     const clipsData = await clipsRes.json();
-    document.getElementById('clips-list').innerHTML = clipsData.clips.map(c => `<div class="bg-gray-800 p-3 rounded-2xl text-sm">${c}</div>`).join('');
+    document.getElementById('clips-list').innerHTML = clipsData.clips.map(c => 
+        `<div class="bg-gray-800 p-3 rounded-2xl text-sm">${c}</div>`
+    ).join('');
 }
 
 sendButton.addEventListener('click', sendMessage);
-input.addEventListener('keypress', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
+input.addEventListener('keypress', e => { 
+    if (e.key === 'Enter' && !e.shiftKey) { 
+        e.preventDefault(); 
+        sendMessage(); 
+    } 
+});
 
-newSession = () => { chatDiv.innerHTML = ''; currentSession = Date.now().toString(); document.getElementById('session-title').textContent = 'New Brainstorm Session'; };
-clearChat = () => { if (confirm('Clear chat?')) chatDiv.innerHTML = ''; };
-clearAll = async () => { if (confirm('Clear everything?')) { await fetch('/api/clear', {method:'POST'}); loadSidebar(); chatDiv.innerHTML = ''; } };
+newSession = () => { 
+    chatDiv.innerHTML = ''; 
+    currentSession = Date.now().toString(); 
+    document.getElementById('session-title').textContent = 'New Brainstorm Session'; 
+};
+
+clearChat = () => { 
+    if (confirm('Clear chat?')) chatDiv.innerHTML = ''; 
+};
+
+clearAll = async () => { 
+    if (confirm('Clear everything?')) { 
+        await fetch('/api/clear', {method:'POST'}); 
+        loadSidebar(); 
+        chatDiv.innerHTML = ''; 
+    } 
+};
 
 // Boot
 loadSidebar();
-console.log('%c✅ ClipperAI Pro UI + Ollama Streaming Ready!', 'color:#3b82f6;font-weight:bold');
+console.log('%c✅ ClipperAI Pro UI + Hokusai Wave Ready!', 'color:#3b82f6;font-weight:bold');
