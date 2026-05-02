@@ -41,9 +41,10 @@ def stream_chat():
             yield f"data: {json.dumps({'phase': 'thinking', 'text': 'Thinking step-by-step...'})}\n\n"
             yield f"data: {json.dumps({'phase': 'reflecting', 'text': 'Reflecting and polishing...'})}\n\n"
 
-            # This is the fix: properly await the async function
+            # Correctly await the async function
             final_text = asyncio.run(generate_with_reflection(user_message, session_id))
 
+            # Stream the final answer
             for token in final_text.split():
                 yield f"data: {json.dumps({'token': token + ' '})}\n\n"
 
