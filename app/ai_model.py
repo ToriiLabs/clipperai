@@ -9,49 +9,69 @@ logger = logging.getLogger(__name__)
 
 vector_memory = VectorMemory()
 
-# Global LLM instance
 llm = None
 
 def get_llm():
     global llm
     if llm is None:
-        logger.info("Initializing Ollama (qwen2.5:14b-q5_K_M) — first load may take 10-30s...")
+        logger.info("Loading Qwen2.5-32B (q5_K_M) — this may take 20-60 seconds on first run...")
         llm = ChatOllama(
-            model="qwen2.5:14b-q5_K_M",
-            temperature=0.75,
+            model="qwen2.5:32b-q5_K_M",
+            temperature=0.7,
             num_ctx=32768,
-            num_thread=32,           # Your 32 cores!
+            num_thread=32,           # Full use of your 32 cores
             top_p=0.9,
         )
-        logger.info("Ollama ready!")
+        logger.info("Qwen2.5-32B ready!")
     return llm
 
-def generate_response(user_message: str, session_id: str = "default") -> str:
-    """Backward compatible non-streaming version (used by old /api/chat)"""
+async def generate_with_reflection(user_message: str, session_id: str = "default"):
+    """High-intelligence agent with explicit reflection step"""
     try:
         memory_clips = vector_memory.search_memory(user_message, n_results=8)
         memory_context = "\n\n".join(memory_clips) if memory_clips else "No relevant memory clips."
 
-        system_prompt = f"""You are ClipperAI — a sharp, creative, honest brainstorming partner.
-Always prioritize the Memory clips below. Use them heavily when relevant."""
+        system_prompt = """You are Clipper — a precise, creative, and rigorously analytical thinking partner.
+You always reference relevant Memory clips when they add value. Think deeply, critique your own ideas, and deliver the highest-quality response possible."""
 
-        messages = [
+        # Step 1: Deep initial reasoning
+        initial_messages = [
             SystemMessage(content=system_prompt),
-            HumanMessage(content=f"Memory clips:\n{memory_context}\n\nQuestion: {user_message}")
+            HumanMessage(content=f"Memory clips:\n{memory_context}\n\nUser query: {user_message}\n\nThink step-by-step and produce your best initial response.")
         ]
 
-        response = get_llm().invoke(messages)
-        ai_response = response.content.strip()
+        initial_response = await get_llm().ainvoke(initial_messages)
+        initial_text = initial_response.content.strip()
 
-        # Save to DB
+        # Step 2: Self-reflection & refinement (this is what dramatically improves quality)
+        reflection_prompt = f"""Review your initial response:
+{initial_text}
+
+Critique it rigorously:
+- How well did you use the memory clips?
+- Is the reasoning creative and non-obvious?
+- Is it clear, concise, and maximally useful?
+- What one improvement would make it significantly better?
+
+Then output only the polished final response."""
+
+        reflection_messages = [
+            SystemMessage(content=system_prompt),
+            HumanMessage(content=reflection_prompt)
+        ]
+
+        final_response = await get_llm().ainvoke(reflection_messages)
+        final_text = final_response.content.strip()
+
+        # Save conversation
         try:
-            conv = Conversation(session_id=session_id, user_message=user_message, ai_response=ai_response)
+            conv = Conversation(session_id=session_id, user_message=user_message, ai_response=final_text)
             db.session.add(conv)
             db.session.commit()
         except Exception:
             db.session.rollback()
 
-        return ai_response
+        return final_text
 
     except Exception as e:
         logger.error(f"Generation error: {e}")
