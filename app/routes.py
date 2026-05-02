@@ -4,7 +4,7 @@ import logging
 import os
 import json
 import asyncio
-from .ai_model import generate_with_reflection, get_llm   # ← Updated import
+from .ai_model import generate_with_reflection, get_llm
 from .rag import process_document
 from .models import db, Conversation
 from .vector_memory import VectorMemory
@@ -29,21 +29,18 @@ def home():
 
 @bp.route('/api/chat', methods=['POST'])
 def chat():
-    """Keep old non-streaming endpoint for backward compatibility"""
+    # Old non-streaming endpoint (kept for compatibility)
     data = request.json
     user_message = data.get('message')
     session_id = data.get('session_id', 'default')
     if not user_message:
         return jsonify({"error": "Message is required"}), 400
-    
-    # For now we still use the old sync version if it exists, or you can switch it later
-    # (reflection is only in the streaming path for best UX)
-    response = "Reflection mode only available in streaming for now."
+    response = "Reflection mode is only available in streaming."
     return jsonify({"response": response, "session_id": session_id})
 
 @bp.route('/api/stream', methods=['POST'])
 def stream_chat():
-    """Streaming with 32B model + deep reflection (much smarter)"""
+    """Streaming with visible Thinking + Reflecting steps"""
     data = request.json
     user_message = data.get('message')
     session_id = data.get('session_id', 'default')
@@ -53,20 +50,26 @@ def stream_chat():
 
     def generate():
         try:
-            # Run the async reflection logic in the sync Flask generator
-            final_text = asyncio.run(generate_with_reflection(user_message, session_id))
+            # Phase 1: Thinking
+            yield f"data: {json.dumps({'phase': 'thinking', 'text': 'Thinking step-by-step...'})}\n\n"
             
-            # Stream the polished final answer word-by-word (smooth UI feel)
+            # Phase 2: Reflecting
+            yield f"data: {json.dumps({'phase': 'reflecting', 'text': 'Reflecting and polishing...'})}\n\n"
+
+            # Run the smart reflection logic
+            final_text = asyncio.run(generate_with_reflection(user_message, session_id))
+
+            # Stream the final polished answer
             for token in final_text.split():
                 yield f"data: {json.dumps({'token': token + ' '})}\n\n"
-                
+
         except Exception as e:
             logger.error(f"Streaming error: {e}")
             yield f"data: {json.dumps({'token': 'Sorry, something went wrong.'})}\n\n"
 
     return Response(generate(), mimetype='text/event-stream')
 
-# === SIDEBAR ENDPOINTS (unchanged) ===
+# === SIDEBAR ENDPOINTS ===
 @bp.route('/api/history', methods=['GET'])
 def get_history():
     sessions = Conversation.query.with_entities(Conversation.session_id).distinct().all()
