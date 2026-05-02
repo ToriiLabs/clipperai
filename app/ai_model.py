@@ -32,18 +32,18 @@ async def generate_with_reflection(user_message: str, session_id: str = "default
 
         system_prompt = "You are Clipper — a precise, creative, and rigorously analytical thinking partner."
 
-        # Phase 1: Thinking
+        # Phase 1: Initial deep thinking
         initial_messages = [
             SystemMessage(content=system_prompt),
             HumanMessage(content=f"Memory clips:\n{memory_context}\n\nUser query: {user_message}\n\nThink step-by-step and produce your best initial response.")
         ]
         initial_response = await get_llm().ainvoke(initial_messages)
 
-        # Phase 2: Reflecting
+        # Phase 2: Reflection & polishing
         reflection_prompt = f"""Review your initial response:
 {initial_response.content}
 
-Critique it rigorously and output only the polished final version."""
+Critique it rigorously and output ONLY the polished final version."""
 
         reflection_messages = [
             SystemMessage(content=system_prompt),
@@ -51,7 +51,7 @@ Critique it rigorously and output only the polished final version."""
         ]
         final_response = await get_llm().ainvoke(reflection_messages)
 
-        # Save final answer
+        # Save to database
         try:
             conv = Conversation(session_id=session_id, user_message=user_message, ai_response=final_response.content.strip())
             db.session.add(conv)
