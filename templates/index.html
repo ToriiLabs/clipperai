@@ -12,12 +12,52 @@
         .chat-bubble-user { background: #3b82f6; color: white; border-radius: 20px 20px 4px 20px; }
         .chat-bubble-ai { background: #1f2937; border-radius: 20px 20px 20px 4px; }
         .message { max-width: 80%; animation: fadeIn 0.2s ease; }
+
+        /* === SUBTLE HOKUSAI GREAT WAVE BACKGROUND === */
+        #wave-bg {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: -1;
+            opacity: 0.08; /* extremely subtle */
+            overflow: hidden;
+        }
+        #wave-bg svg {
+            animation: waveDrift 28s linear infinite;
+        }
+        @keyframes waveDrift {
+            0%   { transform: translateX(0); }
+            100% { transform: translateX(-180px); } /* very slow, gentle drift */
+        }
+        /* Grok-style "meter" pulse while thinking/streaming */
+        #wave-bg.thinking svg {
+            animation-duration: 13s;
+            filter: brightness(1.12);
+            opacity: 0.13;
+        }
+
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body class="bg-gray-950 text-gray-100 flex h-screen overflow-hidden">
-    <!-- SIDEBAR -->
-    <div class="w-80 bg-gray-900 border-r border-gray-800 flex flex-col">
+
+    <!-- SUBTLE HOKUSAI WAVE BACKGROUND -->
+    <div id="wave-bg">
+        <svg width="100%" height="100%" viewBox="0 0 1440 900" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Main curling wave (deep ocean) -->
+            <path id="wave1" d="M0 620 Q360 420 720 580 Q1080 720 1440 540 L1440 900 L0 900 Z" 
+                  fill="none" stroke="#0f172a" stroke-width="85" stroke-opacity="0.45"/>
+            <!-- Secondary wave + foam (Hokusai crest feel) -->
+            <path id="wave2" d="M0 660 Q300 500 720 640 Q1140 770 1440 590 L1440 900 L0 900 Z" 
+                  fill="none" stroke="#1e40af" stroke-width="45" stroke-opacity="0.28"/>
+            <!-- Tiny foam details (iconic Hokusai spray) -->
+            <path id="foam" d="M180 590 Q260 530 340 580 Q420 520 500 575" 
+                  fill="none" stroke="#60a5fa" stroke-width="14" stroke-opacity="0.18"/>
+        </svg>
+    </div>
+
+    <!-- SIDEBAR (exactly as you had it) -->
+    <div class="w-80 bg-gray-900 border-r border-gray-800 flex flex-col relative z-10">
         <div class="p-4 border-b border-gray-800 flex items-center gap-3">
             <i class="fa-solid fa-brain text-blue-500 text-2xl"></i>
             <h1 class="text-2xl font-semibold tracking-tight">ClipperAI</h1>
@@ -41,8 +81,8 @@
         </div>
     </div>
 
-    <!-- MAIN CHAT -->
-    <div class="flex-1 flex flex-col">
+    <!-- MAIN CHAT (exactly as you had it) -->
+    <div class="flex-1 flex flex-col relative z-10">
         <div class="h-14 border-b border-gray-800 flex items-center px-6 justify-between bg-gray-900">
             <div class="flex items-center gap-3">
                 <span id="session-title" class="font-semibold text-lg">Untitled Brainstorm</span>
