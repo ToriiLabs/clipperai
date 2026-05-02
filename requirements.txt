@@ -12,3 +12,5 @@ langgraph
 langchain
 langchain-core
 accelerate
+ollama
+langchain-ollama
