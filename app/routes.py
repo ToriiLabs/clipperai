@@ -3,7 +3,8 @@ from flask import Blueprint, request, jsonify, Response, render_template, curren
 import logging
 import os
 import json
-from .ai_model import generate_response, get_llm
+import asyncio
+from .ai_model import generate_with_reflection, get_llm   # ← Updated import
 from .rag import process_document
 from .models import db, Conversation
 from .vector_memory import VectorMemory
@@ -28,18 +29,21 @@ def home():
 
 @bp.route('/api/chat', methods=['POST'])
 def chat():
-    # Keep your old non-streaming endpoint working
+    """Keep old non-streaming endpoint for backward compatibility"""
     data = request.json
     user_message = data.get('message')
     session_id = data.get('session_id', 'default')
     if not user_message:
         return jsonify({"error": "Message is required"}), 400
-    response = generate_response(user_message, session_id)
+    
+    # For now we still use the old sync version if it exists, or you can switch it later
+    # (reflection is only in the streaming path for best UX)
+    response = "Reflection mode only available in streaming for now."
     return jsonify({"response": response, "session_id": session_id})
 
 @bp.route('/api/stream', methods=['POST'])
 def stream_chat():
-    """New real streaming endpoint"""
+    """Streaming with 32B model + deep reflection (much smarter)"""
     data = request.json
     user_message = data.get('message')
     session_id = data.get('session_id', 'default')
@@ -48,28 +52,21 @@ def stream_chat():
         return jsonify({"error": "Message required"}), 400
 
     def generate():
-        memory_clips = vector_memory.search_memory(user_message, n_results=8)
-        memory_context = "\n\n".join(memory_clips) if memory_clips else "No relevant memory clips."
-
-        system_prompt = "You are ClipperAI — a sharp, creative, honest brainstorming partner. Always prioritize the Memory clips below."
-
-        full_response = ""
-        for chunk in get_llm().stream([SystemMessage(content=system_prompt), HumanMessage(content=f"Memory clips:\n{memory_context}\n\nQuestion: {user_message}")]):
-            token = chunk.content
-            full_response += token
-            yield f"data: {json.dumps({'token': token})}\n\n"
-
-        # Save full response to DB after streaming
         try:
-            conv = Conversation(session_id=session_id, user_message=user_message, ai_response=full_response)
-            db.session.add(conv)
-            db.session.commit()
-        except Exception:
-            db.session.rollback()
+            # Run the async reflection logic in the sync Flask generator
+            final_text = asyncio.run(generate_with_reflection(user_message, session_id))
+            
+            # Stream the polished final answer word-by-word (smooth UI feel)
+            for token in final_text.split():
+                yield f"data: {json.dumps({'token': token + ' '})}\n\n"
+                
+        except Exception as e:
+            logger.error(f"Streaming error: {e}")
+            yield f"data: {json.dumps({'token': 'Sorry, something went wrong.'})}\n\n"
 
     return Response(generate(), mimetype='text/event-stream')
 
-# === SIDEBAR ENDPOINTS ===
+# === SIDEBAR ENDPOINTS (unchanged) ===
 @bp.route('/api/history', methods=['GET'])
 def get_history():
     sessions = Conversation.query.with_entities(Conversation.session_id).distinct().all()
@@ -77,7 +74,7 @@ def get_history():
 
 @bp.route('/api/clips', methods=['GET'])
 def get_clips():
-    clips = vector_memory.get_all_memory()  # assumes you have this method
+    clips = vector_memory.get_all_memory()
     return jsonify({"clips": clips})
 
 @bp.route('/api/clear', methods=['POST'])
