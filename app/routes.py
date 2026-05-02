@@ -3,7 +3,6 @@ from flask import Blueprint, request, jsonify, Response, render_template, curren
 import logging
 import os
 import json
-import asyncio
 from .ai_model import generate_with_reflection, get_llm
 from .rag import process_document
 from .models import db, Conversation
@@ -27,16 +26,6 @@ def before_request():
 def home():
     return render_template('index.html')
 
-@bp.route('/api/chat', methods=['POST'])
-def chat():
-    data = request.json
-    user_message = data.get('message')
-    session_id = data.get('session_id', 'default')
-    if not user_message:
-        return jsonify({"error": "Message is required"}), 400
-    response = "Reflection mode is only available in streaming."
-    return jsonify({"response": response, "session_id": session_id})
-
 @bp.route('/api/stream', methods=['POST'])
 def stream_chat():
     data = request.json
@@ -51,8 +40,10 @@ def stream_chat():
             yield f"data: {json.dumps({'phase': 'thinking', 'text': 'Thinking step-by-step...'})}\n\n"
             yield f"data: {json.dumps({'phase': 'reflecting', 'text': 'Reflecting and polishing...'})}\n\n"
 
-            final_text = asyncio.run(generate_with_reflection(user_message, session_id))
+            # Run the full reflection (this is where the DB save happens safely)
+            final_text = generate_with_reflection(user_message, session_id)
 
+            # Stream the final polished answer
             for token in final_text.split():
                 yield f"data: {json.dumps({'token': token + ' '})}\n\n"
 
@@ -62,6 +53,7 @@ def stream_chat():
 
     return Response(generate(), mimetype='text/event-stream')
 
+# Sidebar endpoints
 @bp.route('/api/history', methods=['GET'])
 def get_history():
     sessions = Conversation.query.with_entities(Conversation.session_id).distinct().all()
@@ -71,10 +63,7 @@ def get_history():
 def get_clips():
     try:
         clips = vector_memory.get_all_memory()
-    except AttributeError:
-        clips = []  # safe fallback if method doesn't exist yet
-    except Exception as e:
-        logger.error(f"Clips error: {e}")
+    except Exception:
         clips = []
     return jsonify({"clips": clips})
 
