@@ -36,20 +36,13 @@ def stream_chat():
 
     def generate():
         try:
+            # Force both phases clearly
             yield f"data: {json.dumps({'phase': 'thinking', 'text': 'Thinking step-by-step...'})}\n\n"
             yield f"data: {json.dumps({'phase': 'reflecting', 'text': 'Reflecting and polishing...'})}\n\n"
 
             final_text = generate_with_reflection(user_message)
 
-            # Save to DB safely inside the request context
-            try:
-                with current_app.app_context():
-                    conv = Conversation(session_id=session_id, user_message=user_message, ai_response=final_text)
-                    db.session.add(conv)
-                    db.session.commit()
-            except Exception as db_err:
-                logger.error(f"DB save failed: {db_err}")
-
+            # Stream the final answer
             for token in final_text.split():
                 yield f"data: {json.dumps({'token': token + ' '})}\n\n"
 
@@ -59,6 +52,7 @@ def stream_chat():
 
     return Response(generate(), mimetype='text/event-stream')
 
+# Sidebar endpoints (unchanged)
 @bp.route('/api/history', methods=['GET'])
 def get_history():
     sessions = Conversation.query.with_entities(Conversation.session_id).distinct().all()
