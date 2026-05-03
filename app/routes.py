@@ -4,7 +4,6 @@ import logging
 import os
 import json
 from .ai_model import generate_with_reflection, get_llm
-from .rag import process_document
 from .models import db, Conversation
 from .vector_memory import VectorMemory
 
