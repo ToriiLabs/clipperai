@@ -14,15 +14,15 @@ llm = None
 def get_llm():
     global llm
     if llm is None:
-        logger.info("=== LOADING QWEN2.5-32B (first load can take 60-120s) ===")
+        logger.info("=== LOADING QWEN2.5-14B (fast on 16-core) ===")
         llm = ChatOllama(
-            model="qwen2.5:32b",
+            model="qwen2.5:14b",
             temperature=0.7,
             num_ctx=32768,
-            num_thread=32,
+            num_thread=16,          # Matches your 16-core
             top_p=0.9,
         )
-        logger.info("✅ Qwen2.5-32B loaded!")
+        logger.info("✅ Qwen2.5-14B loaded!")
     return llm
 
 def generate_with_reflection(user_message: str, session_id: str = "default"):
@@ -32,14 +32,12 @@ def generate_with_reflection(user_message: str, session_id: str = "default"):
 
         system_prompt = "You are Clipper — a precise, creative, and rigorously analytical thinking partner."
 
-        # Thinking phase
         initial_messages = [
             SystemMessage(content=system_prompt),
             HumanMessage(content=f"Memory clips:\n{memory_context}\n\nUser query: {user_message}\n\nThink step-by-step and produce your best initial response.")
         ]
         initial_response = get_llm().invoke(initial_messages)
 
-        # Reflecting phase
         reflection_prompt = f"""Review your initial response:
 {initial_response.content}
 
@@ -53,7 +51,6 @@ Critique it rigorously and output ONLY the polished final version."""
 
         final_text = final_response.content.strip()
 
-        # Save to DB
         try:
             conv = Conversation(session_id=session_id, user_message=user_message, ai_response=final_text)
             db.session.add(conv)
