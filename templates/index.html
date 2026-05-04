@@ -13,13 +13,13 @@
         .chat-bubble-ai { background: #1f2937; border-radius: 20px 20px 20px 4px; }
         .message { max-width: 80%; animation: fadeIn 0.2s ease; }
 
-        /* HOKUSAI GREAT WAVE BACKGROUND */
+        /* HOKUSAI WAVE - made more visible for testing */
         #wave-bg {
             position: fixed;
             inset: 0;
             pointer-events: none;
             z-index: -1;
-            opacity: 0.08;
+            opacity: 0.30;           /* increased so you can clearly see it */
             overflow: hidden;
         }
         #wave-bg svg {
@@ -31,8 +31,8 @@
         }
         #wave-bg.thinking svg {
             animation-duration: 13s;
-            filter: brightness(1.12);
-            opacity: 0.13;
+            filter: brightness(1.2);
+            opacity: 0.45;
         }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
@@ -93,6 +93,6 @@
         </div>
     </div>
 
-    <script src="/static/js/main.js"></script>
+    <script src="/static/js/main.js?v=20250504"></script>
 </body>
 </html>
