@@ -3,7 +3,7 @@ from flask import Blueprint, request, jsonify, Response, render_template, curren
 import logging
 import os
 import json
-from .ai_model import generate_with_reflection, get_llm
+from .ai_model import generate_with_reflection
 from .models import db, Conversation
 from .vector_memory import VectorMemory
 
@@ -36,15 +36,13 @@ def stream_chat():
 
     def generate():
         try:
-            # Force both phases clearly
+            # Show thinking phases (nice UX)
             yield f"data: {json.dumps({'phase': 'thinking', 'text': 'Thinking step-by-step...'})}\n\n"
             yield f"data: {json.dumps({'phase': 'reflecting', 'text': 'Reflecting and polishing...'})}\n\n"
 
-            final_text = generate_with_reflection(user_message)
-
-            # Stream the final answer
-            for token in final_text.split():
-                yield f"data: {json.dumps({'token': token + ' '})}\n\n"
+            # Real streaming from the model (Grok-like)
+            for token in generate_with_reflection(user_message):
+                yield f"data: {json.dumps({'token': token})}\n\n"
 
         except Exception as e:
             logger.error(f"Streaming error: {e}", exc_info=True)
