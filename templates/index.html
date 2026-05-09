@@ -20,34 +20,35 @@
             inset: 0;
             pointer-events: none;
             z-index: -1;
-            opacity: 0.85;                    /* always visible */
+            opacity: 0.95;                    /* very visible now */
             overflow: hidden;
             transition: all 0.6s ease;
+            background: #0f172a;              /* fallback dark ocean */
         }
         #wave-bg svg { animation: waveDrift 12s linear infinite; }
         @keyframes waveDrift { 0% { transform: translateX(0); } 100% { transform: translateX(-280px); } }
 
-        /* NIGHT MODE - deep dark blue */
+        /* NIGHT MODE - deep dark blues */
         #wave-bg.night svg path:nth-child(1) { stroke: #0f172a !important; }
         #wave-bg.night svg path:nth-child(2) { stroke: #1e40af !important; }
         #wave-bg.night svg path:nth-child(3) { stroke: #60a5fa !important; }
 
-        /* DAY MODE - bright sky blue */
+        /* DAY MODE - bright Hokusai sky blues */
         #wave-bg.day svg path:nth-child(1) { stroke: #0ea5e9 !important; }
         #wave-bg.day svg path:nth-child(2) { stroke: #22d3ee !important; }
         #wave-bg.day svg path:nth-child(3) { stroke: #67e8f9 !important; }
 
-        /* THINKING PHASE - vibrant blue wave (agent effect) */
+        /* THINKING PHASE - vibrant energetic blue wave */
         #wave-bg.thinking {
-            opacity: 0.98 !important;
+            opacity: 1 !important;
         }
         #wave-bg.thinking svg path:nth-child(1) { stroke: #0ea5e9 !important; animation-duration: 5s; }
         #wave-bg.thinking svg path:nth-child(2) { stroke: #3b82f6 !important; animation-duration: 6s; }
         #wave-bg.thinking svg path:nth-child(3) { stroke: #60a5fa !important; animation-duration: 4s; }
 
-        /* REFLECTING PHASE - teal wave */
+        /* REFLECTING PHASE - calm teal wave */
         #wave-bg.reflecting {
-            opacity: 0.98 !important;
+            opacity: 1 !important;
         }
         #wave-bg.reflecting svg path:nth-child(1) { stroke: #14b8a6 !important; animation-duration: 7s; }
         #wave-bg.reflecting svg path:nth-child(2) { stroke: #22d3ee !important; animation-duration: 8s; }
@@ -130,7 +131,6 @@
             waveBg.classList.toggle('day', isDay);
             waveBg.classList.toggle('night', !isDay);
             themeToggle.innerHTML = isDay ? '<i class="fa-solid fa-moon"></i>' : '<i class="fa-solid fa-sun"></i>';
-            console.log('🌊 Auto theme set to:', isDay ? 'DAY' : 'NIGHT');
         }
 
         function toggleDayNight() {
@@ -138,14 +138,12 @@
             waveBg.classList.toggle('day', !isDay);
             waveBg.classList.toggle('night', isDay);
             themeToggle.innerHTML = isDay ? '<i class="fa-solid fa-sun"></i>' : '<i class="fa-solid fa-moon"></i>';
-            console.log('🌊 Manual toggle to:', !isDay ? 'DAY' : 'NIGHT');
         }
 
         function setWavePhase(phase) {
             waveBg.classList.remove('thinking', 'reflecting');
             if (phase === 'thinking' || phase === 'reflecting') {
                 waveBg.classList.add(phase);
-                console.log('🌊 Wave phase activated:', phase.toUpperCase());
             }
         }
 
@@ -223,7 +221,6 @@
             if (confirm('Clear all conversations and memory?')) chat.innerHTML = ''; 
         }
 
-        // Initialize
         window.onload = autoDetectTheme;
     </script>
 </body>
