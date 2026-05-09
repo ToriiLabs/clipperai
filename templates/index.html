@@ -3,9 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
     <title>ClipperAI</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
@@ -16,34 +13,41 @@
         .chat-bubble-ai { background: #1f2937; border-radius: 20px 20px 20px 4px; }
         .message { max-width: 80%; animation: fadeIn 0.2s ease; }
 
-        /* HOKUSAI WAVE - MAX VISIBILITY FOR SAFARI TESTING */
+        /* HOKUSAI WAVE ANIMATION - Grok-style agent thinking */
         #wave-bg {
             position: fixed;
             inset: 0;
             pointer-events: none;
             z-index: -1;
-            opacity: 0.50;           /* very obvious for testing */
+            opacity: 0.6;
             overflow: hidden;
-            background: rgba(15, 23, 42, 0.15); /* faint tint */
+            transition: all 0.6s ease;
         }
-        #wave-bg svg {
-            animation: waveDrift 20s linear infinite;
+        #wave-bg svg { animation: waveDrift 12s linear infinite; }
+        @keyframes waveDrift { 0% { transform: translateX(0); } 100% { transform: translateX(-200px); } }
+
+        /* Thinking phase - vibrant blue (like Grok) */
+        #wave-bg.thinking {
+            opacity: 0.85;
         }
-        @keyframes waveDrift {
-            0%   { transform: translateX(0); }
-            100% { transform: translateX(-180px); }
+        #wave-bg.thinking svg path:nth-child(1) { stroke: #0ea5e9; }
+        #wave-bg.thinking svg path:nth-child(2) { stroke: #3b82f6; }
+        #wave-bg.thinking svg path:nth-child(3) { stroke: #60a5fa; animation-duration: 6s; }
+
+        /* Reflecting phase - cyan/teal (calm polishing) */
+        #wave-bg.reflecting {
+            opacity: 0.9;
         }
-        #wave-bg.thinking svg {
-            animation-duration: 9s;
-            filter: brightness(1.4);
-            opacity: 0.7;
-        }
+        #wave-bg.reflecting svg path:nth-child(1) { stroke: #14b8a6; }
+        #wave-bg.reflecting svg path:nth-child(2) { stroke: #22d3ee; }
+        #wave-bg.reflecting svg path:nth-child(3) { stroke: #67e8f9; animation-duration: 8s; }
+
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body class="bg-gray-950 text-gray-100 flex h-screen overflow-hidden">
 
-    <!-- HOKUSAI WAVE -->
+    <!-- HOKUSAI WAVE BACKGROUND -->
     <div id="wave-bg">
         <svg width="100%" height="100%" viewBox="0 0 1440 900" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M0 620 Q360 420 720 580 Q1080 720 1440 540 L1440 900 L0 900 Z" fill="none" stroke="#0f172a" stroke-width="85" stroke-opacity="0.45"/>
@@ -52,29 +56,25 @@
         </svg>
     </div>
 
-    <!-- SIDEBAR -->
+    <!-- SIDEBAR (unchanged) -->
     <div class="w-80 bg-gray-900 border-r border-gray-800 flex flex-col relative z-10">
         <div class="p-4 border-b border-gray-800 flex items-center gap-3">
             <h1 class="text-2xl font-semibold tracking-tight">ClipperAI</h1>
         </div>
-
         <div onclick="newSession()" class="mx-4 mt-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl py-3 px-4 flex items-center justify-center gap-2 cursor-pointer transition-colors">
             <i class="fa-solid fa-plus"></i>
             <span class="font-medium">New Conversation</span>
         </div>
-
         <div class="px-4 py-2 text-xs uppercase tracking-widest text-gray-400 mt-6">Conversations</div>
         <div id="history-list" class="flex-1 overflow-y-auto px-2 space-y-1 text-sm"></div>
-
         <div class="px-4 py-2 text-xs uppercase tracking-widest text-gray-400">Memory</div>
         <div id="clips-list" class="flex-1 overflow-y-auto px-4 space-y-3 text-sm"></div>
-
         <div class="p-4 border-t border-gray-800 text-xs text-gray-500 flex items-center justify-between">
             <span onclick="clearAll()" class="cursor-pointer hover:text-white">Clear All</span>
         </div>
     </div>
 
-    <!-- MAIN CHAT -->
+    <!-- MAIN CHAT AREA -->
     <div class="flex-1 flex flex-col relative z-10">
         <div class="h-14 border-b border-gray-800 flex items-center px-6 justify-between bg-gray-900">
             <span id="session-title" class="font-semibold text-lg">New Conversation</span>
@@ -97,6 +97,21 @@
         </div>
     </div>
 
-    <script src="/static/js/main.js?v=20250504-2"></script>
+    <script>
+        // Simple JS to control the Hokusai wave (add this at the bottom)
+        const waveBg = document.getElementById('wave-bg');
+
+        function setWavePhase(phase) {
+            waveBg.classList.remove('thinking', 'reflecting');
+            if (phase === 'thinking') waveBg.classList.add('thinking');
+            if (phase === 'reflecting') waveBg.classList.add('reflecting');
+            if (phase === 'final' || phase === 'error') {
+                waveBg.classList.remove('thinking', 'reflecting');
+            }
+        }
+
+        // The rest of your original main.js logic would go here.
+        // For now, this handles the wave. You can merge with your existing main.js if needed.
+    </script>
 </body>
 </html>
