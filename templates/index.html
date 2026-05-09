@@ -13,7 +13,7 @@
         .chat-bubble-ai { background: #1f2937; border-radius: 20px 20px 20px 4px; }
         .message { max-width: 80%; animation: fadeIn 0.2s ease; }
 
-        /* HOKUSAI WAVE ANIMATION - Grok-style agent thinking */
+        /* HOKUSAI WAVE ANIMATION */
         #wave-bg {
             position: fixed;
             inset: 0;
@@ -26,18 +26,12 @@
         #wave-bg svg { animation: waveDrift 12s linear infinite; }
         @keyframes waveDrift { 0% { transform: translateX(0); } 100% { transform: translateX(-200px); } }
 
-        /* Thinking phase - vibrant blue (like Grok) */
-        #wave-bg.thinking {
-            opacity: 0.85;
-        }
+        /* Thinking - vibrant blue */
         #wave-bg.thinking svg path:nth-child(1) { stroke: #0ea5e9; }
         #wave-bg.thinking svg path:nth-child(2) { stroke: #3b82f6; }
         #wave-bg.thinking svg path:nth-child(3) { stroke: #60a5fa; animation-duration: 6s; }
 
-        /* Reflecting phase - cyan/teal (calm polishing) */
-        #wave-bg.reflecting {
-            opacity: 0.9;
-        }
+        /* Reflecting - cyan/teal */
         #wave-bg.reflecting svg path:nth-child(1) { stroke: #14b8a6; }
         #wave-bg.reflecting svg path:nth-child(2) { stroke: #22d3ee; }
         #wave-bg.reflecting svg path:nth-child(3) { stroke: #67e8f9; animation-duration: 8s; }
@@ -56,7 +50,7 @@
         </svg>
     </div>
 
-    <!-- SIDEBAR (unchanged) -->
+    <!-- SIDEBAR -->
     <div class="w-80 bg-gray-900 border-r border-gray-800 flex flex-col relative z-10">
         <div class="p-4 border-b border-gray-800 flex items-center gap-3">
             <h1 class="text-2xl font-semibold tracking-tight">ClipperAI</h1>
@@ -74,7 +68,7 @@
         </div>
     </div>
 
-    <!-- MAIN CHAT AREA -->
+    <!-- MAIN CHAT -->
     <div class="flex-1 flex flex-col relative z-10">
         <div class="h-14 border-b border-gray-800 flex items-center px-6 justify-between bg-gray-900">
             <span id="session-title" class="font-semibold text-lg">New Conversation</span>
@@ -89,8 +83,10 @@
         <div class="p-4 border-t border-gray-800 bg-gray-900">
             <div class="flex gap-3">
                 <input id="input" type="text" placeholder="Type your message..." 
-                       class="flex-1 bg-gray-800 border border-gray-700 focus:border-blue-500 rounded-3xl px-6 py-4 outline-none text-lg">
-                <button id="send" class="bg-blue-600 hover:bg-blue-700 w-12 h-12 rounded-3xl flex items-center justify-center">
+                       class="flex-1 bg-gray-800 border border-gray-700 focus:border-blue-500 rounded-3xl px-6 py-4 outline-none text-lg"
+                       onkeydown="if(event.key === 'Enter') sendMessage();">
+                <button id="send" onclick="sendMessage()" 
+                        class="bg-blue-600 hover:bg-blue-700 w-12 h-12 rounded-3xl flex items-center justify-center">
                     <i class="fa-solid fa-paper-plane"></i>
                 </button>
             </div>
@@ -98,20 +94,29 @@
     </div>
 
     <script>
-        // Simple JS to control the Hokusai wave (add this at the bottom)
+        const chat = document.getElementById('chat');
+        const input = document.getElementById('input');
         const waveBg = document.getElementById('wave-bg');
 
         function setWavePhase(phase) {
             waveBg.classList.remove('thinking', 'reflecting');
             if (phase === 'thinking') waveBg.classList.add('thinking');
             if (phase === 'reflecting') waveBg.classList.add('reflecting');
-            if (phase === 'final' || phase === 'error') {
-                waveBg.classList.remove('thinking', 'reflecting');
-            }
         }
 
-        // The rest of your original main.js logic would go here.
-        // For now, this handles the wave. You can merge with your existing main.js if needed.
-    </script>
-</body>
-</html>
+        function addMessage(text, type) {
+            const div = document.createElement('div');
+            div.className = `flex ${type === 'user' ? 'justify-end' : 'justify-start'} message`;
+            div.innerHTML = `
+                <div class="${type === 'user' ? 'chat-bubble-user' : 'chat-bubble-ai'} px-5 py-4 max-w-[80%]">
+                    ${text}
+                </div>
+            `;
+            chat.appendChild(div);
+            chat.scrollTop = chat.scrollHeight;
+            return div;
+        }
+
+        function sendMessage() {
+            const message = input.value.trim();
+            if (!message) return;
