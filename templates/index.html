@@ -77,4 +77,154 @@
             <span class="font-medium">New Conversation</span>
         </div>
         
-        <div class="px-4
+        <div class="px-4 py-2 text-xs uppercase tracking-widest text-gray-400 mt-6">Conversations</div>
+        <div id="history-list" class="flex-1 overflow-y-auto px-2 space-y-1 text-sm"></div>
+        
+        <div class="px-4 py-2 text-xs uppercase tracking-widest text-gray-400">Memory</div>
+        <div id="clips-list" class="flex-1 overflow-y-auto px-4 space-y-3 text-sm"></div>
+        
+        <div class="p-4 border-t border-gray-800 text-xs text-gray-500 flex items-center justify-between">
+            <span onclick="clearAll()" class="cursor-pointer hover:text-white">Clear All</span>
+        </div>
+    </div>
+
+    <!-- MAIN CHAT -->
+    <div class="flex-1 flex flex-col relative z-10">
+        <div class="h-14 border-b border-gray-800 flex items-center px-6 justify-between bg-gray-900">
+            <span id="session-title" class="font-semibold text-lg">New Conversation</span>
+            
+            <button onclick="toggleDayNight()" id="theme-toggle" class="flex items-center gap-2 text-gray-400 hover:text-white text-xl">
+                <i class="fa-solid fa-sun"></i>
+            </button>
+            
+            <button onclick="clearChat()" class="flex items-center gap-2 text-gray-400 hover:text-white">
+                <i class="fa-solid fa-trash"></i>
+                <span class="text-sm">Clear</span>
+            </button>
+        </div>
+
+        <div id="chat" class="flex-1 overflow-y-auto p-6 space-y-8 bg-gray-950"></div>
+
+        <div class="p-4 border-t border-gray-800 bg-gray-900">
+            <div class="flex gap-3">
+                <input id="input" type="text" placeholder="Type your message..." 
+                       class="flex-1 bg-gray-800 border border-gray-700 focus:border-blue-500 rounded-3xl px-6 py-4 outline-none text-lg"
+                       onkeydown="if(event.key === 'Enter') sendMessage();">
+                <button onclick="sendMessage()" 
+                        class="bg-blue-600 hover:bg-blue-700 w-12 h-12 rounded-3xl flex items-center justify-center text-white">
+                    <i class="fa-solid fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const chat = document.getElementById('chat');
+        const input = document.getElementById('input');
+        const waveBg = document.getElementById('wave-bg');
+        const themeToggle = document.getElementById('theme-toggle');
+
+        function autoDetectTheme() {
+            const hour = new Date().getHours();
+            const isDay = hour >= 6 && hour < 19;
+            waveBg.classList.toggle('day', isDay);
+            waveBg.classList.toggle('night', !isDay);
+            themeToggle.innerHTML = isDay ? '<i class="fa-solid fa-moon"></i>' : '<i class="fa-solid fa-sun"></i>';
+            console.log('🌊 Auto theme set to:', isDay ? 'DAY' : 'NIGHT');
+        }
+
+        function toggleDayNight() {
+            const isDay = waveBg.classList.contains('day');
+            waveBg.classList.toggle('day', !isDay);
+            waveBg.classList.toggle('night', isDay);
+            themeToggle.innerHTML = isDay ? '<i class="fa-solid fa-sun"></i>' : '<i class="fa-solid fa-moon"></i>';
+            console.log('🌊 Manual toggle to:', !isDay ? 'DAY' : 'NIGHT');
+        }
+
+        function setWavePhase(phase) {
+            waveBg.classList.remove('thinking', 'reflecting');
+            if (phase === 'thinking' || phase === 'reflecting') {
+                waveBg.classList.add(phase);
+                console.log('🌊 Wave phase activated:', phase.toUpperCase());
+            }
+        }
+
+        function addMessage(text, type) {
+            const div = document.createElement('div');
+            div.className = `flex ${type === 'user' ? 'justify-end' : 'justify-start'} message`;
+            div.innerHTML = `<div class="${type === 'user' ? 'chat-bubble-user' : 'chat-bubble-ai'} px-5 py-4">${text}</div>`;
+            chat.appendChild(div);
+            chat.scrollTop = chat.scrollHeight;
+            return div;
+        }
+
+        async function sendMessage() {
+            const message = input.value.trim();
+            if (!message) return;
+
+            addMessage(message, 'user');
+            input.value = '';
+
+            const aiDiv = addMessage('<span class="text-gray-400">Thinking...</span>', 'ai');
+
+            try {
+                const response = await fetch('/api/stream', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: message })
+                });
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let buffer = '';
+
+                while (true) {
+                    const { value, done } = await reader.read();
+                    if (done) break;
+
+                    buffer += decoder.decode(value, { stream: true });
+                    const lines = buffer.split('\n');
+                    buffer = lines.pop() || '';
+
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            const data = JSON.parse(line.slice(6));
+
+                            if (data.phase) {
+                                setWavePhase(data.phase);
+
+                                if (data.phase === 'thinking') {
+                                    aiDiv.querySelector('div').innerHTML = 'Thinking step-by-step...';
+                                } else if (data.phase === 'reflecting') {
+                                    aiDiv.querySelector('div').innerHTML = 'Reflecting & polishing...';
+                                } else if (data.phase === 'final') {
+                                    aiDiv.querySelector('div').innerHTML = '';
+                                }
+                            } 
+                            else if (data.token) {
+                                aiDiv.querySelector('div').innerHTML += data.token;
+                                chat.scrollTop = chat.scrollHeight;
+                                await new Promise(r => setTimeout(r, 12));
+                            }
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Stream error:', error);
+                aiDiv.querySelector('div').innerHTML = 'Error connecting to model.';
+            }
+        }
+
+        input.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
+
+        function newSession() { location.reload(); }
+        function clearChat() { chat.innerHTML = ''; }
+        function clearAll() { 
+            if (confirm('Clear all conversations and memory?')) chat.innerHTML = ''; 
+        }
+
+        // Initialize
+        window.onload = autoDetectTheme;
+    </script>
+</body>
+</html>
