@@ -10,18 +10,11 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
         body { font-family: 'Inter', system-ui, sans-serif; }
         
-        .chat-bubble-user { 
-            background: #3b82f6; 
-            color: white; 
-            border-radius: 20px 20px 4px 20px; 
-        }
-        .chat-bubble-ai { 
-            background: #1f2937; 
-            border-radius: 20px 20px 20px 4px; 
-        }
+        .chat-bubble-user { background: #3b82f6; color: white; border-radius: 20px 20px 4px 20px; }
+        .chat-bubble-ai { background: #1f2937; border-radius: 20px 20px 20px 4px; }
         .message { max-width: 80%; animation: fadeIn 0.2s ease; }
 
-        /* HOKUSAI WAVE ANIMATION */
+        /* HOKUSAI WAVE BACKGROUND */
         #wave-bg {
             position: fixed;
             inset: 0;
@@ -29,19 +22,29 @@
             z-index: -1;
             opacity: 0.55;
             overflow: hidden;
+            transition: all 0.8s ease;
         }
         #wave-bg svg { animation: waveDrift 14s linear infinite; }
         @keyframes waveDrift { 0% { transform: translateX(0); } 100% { transform: translateX(-250px); } }
 
-        /* Thinking - vibrant blue */
-        #wave-bg.thinking svg path:nth-child(1) { stroke: #0ea5e9; }
-        #wave-bg.thinking svg path:nth-child(2) { stroke: #3b82f6; }
-        #wave-bg.thinking svg path:nth-child(3) { stroke: #60a5fa; }
+        /* NIGHT MODE - Deep ocean blues */
+        #wave-bg.night svg path:nth-child(1) { stroke: #0f172a; }
+        #wave-bg.night svg path:nth-child(2) { stroke: #1e40af; }
+        #wave-bg.night svg path:nth-child(3) { stroke: #60a5fa; }
 
-        /* Reflecting - cyan/teal */
-        #wave-bg.reflecting svg path:nth-child(1) { stroke: #14b8a6; }
-        #wave-bg.reflecting svg path:nth-child(2) { stroke: #22d3ee; }
-        #wave-bg.reflecting svg path:nth-child(3) { stroke: #67e8f9; }
+        /* DAY MODE - Bright Hokusai sky blues */
+        #wave-bg.day svg path:nth-child(1) { stroke: #0ea5e9; }
+        #wave-bg.day svg path:nth-child(2) { stroke: #22d3ee; }
+        #wave-bg.day svg path:nth-child(3) { stroke: #67e8f9; }
+
+        /* Thinking / Reflecting overrides (still work on top of day/night) */
+        #wave-bg.thinking svg path:nth-child(1) { stroke: #0ea5e9 !important; }
+        #wave-bg.thinking svg path:nth-child(2) { stroke: #3b82f6 !important; }
+        #wave-bg.thinking svg path:nth-child(3) { stroke: #60a5fa !important; }
+
+        #wave-bg.reflecting svg path:nth-child(1) { stroke: #14b8a6 !important; }
+        #wave-bg.reflecting svg path:nth-child(2) { stroke: #22d3ee !important; }
+        #wave-bg.reflecting svg path:nth-child(3) { stroke: #67e8f9 !important; }
 
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
@@ -49,7 +52,7 @@
 <body class="bg-gray-950 text-gray-100 flex h-screen overflow-hidden">
 
     <!-- HOKUSAI WAVE BACKGROUND -->
-    <div id="wave-bg">
+    <div id="wave-bg" class="night">
         <svg width="100%" height="100%" viewBox="0 0 1440 900" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M0 620 Q360 420 720 580 Q1080 720 1440 540 L1440 900 L0 900 Z" fill="none" stroke="#0f172a" stroke-width="85" stroke-opacity="0.45"/>
             <path d="M0 660 Q300 500 720 640 Q1140 770 1440 590 L1440 900 L0 900 Z" fill="none" stroke="#1e40af" stroke-width="45" stroke-opacity="0.28"/>
@@ -78,10 +81,17 @@
         </div>
     </div>
 
-    <!-- MAIN CHAT -->
+    <!-- MAIN CHAT AREA -->
     <div class="flex-1 flex flex-col relative z-10">
         <div class="h-14 border-b border-gray-800 flex items-center px-6 justify-between bg-gray-900">
             <span id="session-title" class="font-semibold text-lg">New Conversation</span>
+            
+            <!-- DAY / NIGHT TOGGLE -->
+            <button onclick="toggleDayNight()" id="theme-toggle"
+                    class="flex items-center gap-2 text-gray-400 hover:text-white text-xl">
+                <i class="fa-solid fa-sun"></i>
+            </button>
+            
             <button onclick="clearChat()" class="flex items-center gap-2 text-gray-400 hover:text-white">
                 <i class="fa-solid fa-trash"></i>
                 <span class="text-sm">Clear</span>
@@ -107,6 +117,23 @@
         const chat = document.getElementById('chat');
         const input = document.getElementById('input');
         const waveBg = document.getElementById('wave-bg');
+        const themeToggle = document.getElementById('theme-toggle');
+
+        // Auto day/night based on local time
+        function autoDetectTheme() {
+            const hour = new Date().getHours();
+            const isDay = hour >= 6 && hour < 19;   // 6 AM - 7 PM = day
+            waveBg.classList.toggle('day', isDay);
+            waveBg.classList.toggle('night', !isDay);
+            themeToggle.innerHTML = isDay ? '<i class="fa-solid fa-moon"></i>' : '<i class="fa-solid fa-sun"></i>';
+        }
+
+        function toggleDayNight() {
+            const isCurrentlyDay = waveBg.classList.contains('day');
+            waveBg.classList.toggle('day', !isCurrentlyDay);
+            waveBg.classList.toggle('night', isCurrentlyDay);
+            themeToggle.innerHTML = isCurrentlyDay ? '<i class="fa-solid fa-sun"></i>' : '<i class="fa-solid fa-moon"></i>';
+        }
 
         function setWavePhase(phase) {
             waveBg.classList.remove('thinking', 'reflecting');
@@ -196,6 +223,9 @@
         function clearAll() { 
             if (confirm('Clear all conversations and memory?')) chat.innerHTML = ''; 
         }
+
+        // Initialize
+        window.onload = autoDetectTheme;
     </script>
 </body>
 </html>
