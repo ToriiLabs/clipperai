@@ -12,7 +12,7 @@ llm = None
 def get_llm():
     global llm
     if llm is None:
-        logger.info("=== LOADING QWEN2.5-14B (with visible thinking process) ===")
+        logger.info("=== LOADING QWEN2.5-14B (Hokusai Wave Thinking) ===")
         llm = ChatOllama(
             model="qwen2.5:14b",
             temperature=0.85,
@@ -24,16 +24,14 @@ def get_llm():
     return llm
 
 def generate_with_reflection(user_message: str):
-    """Streams the full thinking process + final answer (Grok-style)"""
+    """Streams thinking process with Hokusai wave phases"""
     try:
-        # 1. Memory retrieval
         memory_clips = vector_memory.search_memory(user_message, n_results=8)
         memory_context = "\n\n".join(memory_clips) if memory_clips else "No relevant memory clips."
 
-        system_prompt = """You are Clipper — a witty, direct, maximally truth-seeking AI inspired by Grok.
-You show your thinking process clearly, then give a polished final answer."""
+        system_prompt = """You are Clipper — a witty, direct, maximally truth-seeking AI inspired by Grok."""
 
-        # === PHASE 1: THINKING (visible) ===
+        # PHASE 1: THINKING
         yield "PHASE:THINKING"
         initial_messages = [
             SystemMessage(content=system_prompt),
@@ -43,7 +41,7 @@ You show your thinking process clearly, then give a polished final answer."""
         for word in initial_response.content.strip().split():
             yield f"THINKING:{word} "
 
-        # === PHASE 2: REFLECTING (visible) ===
+        # PHASE 2: REFLECTING
         yield "PHASE:REFLECTING"
         reflection_prompt = f"""Review your initial thinking:
 {initial_response.content}
@@ -57,9 +55,8 @@ Critique it rigorously and output ONLY the polished final version."""
         final_response = get_llm().invoke(reflection_messages)
         final_text = final_response.content.strip()
 
-        # === PHASE 3: FINAL ANSWER (smooth streaming) ===
+        # PHASE 3: FINAL ANSWER (smooth character streaming)
         yield "PHASE:FINAL"
-        # Stream character-by-character for super smooth Grok-like feel
         for char in final_text:
             yield f"FINAL:{char}"
 
