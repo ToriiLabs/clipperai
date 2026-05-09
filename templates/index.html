@@ -27,21 +27,22 @@
         #wave-bg svg { animation: waveDrift 14s linear infinite; }
         @keyframes waveDrift { 0% { transform: translateX(0); } 100% { transform: translateX(-250px); } }
 
-        /* NIGHT MODE - Deep ocean blues */
+        /* NIGHT MODE */
         #wave-bg.night svg path:nth-child(1) { stroke: #0f172a; }
         #wave-bg.night svg path:nth-child(2) { stroke: #1e40af; }
         #wave-bg.night svg path:nth-child(3) { stroke: #60a5fa; }
 
-        /* DAY MODE - Bright Hokusai sky blues */
+        /* DAY MODE */
         #wave-bg.day svg path:nth-child(1) { stroke: #0ea5e9; }
         #wave-bg.day svg path:nth-child(2) { stroke: #22d3ee; }
         #wave-bg.day svg path:nth-child(3) { stroke: #67e8f9; }
 
-        /* Thinking / Reflecting overrides (still work on top of day/night) */
+        /* Thinking phase - strong blue waves */
         #wave-bg.thinking svg path:nth-child(1) { stroke: #0ea5e9 !important; }
         #wave-bg.thinking svg path:nth-child(2) { stroke: #3b82f6 !important; }
         #wave-bg.thinking svg path:nth-child(3) { stroke: #60a5fa !important; }
 
+        /* Reflecting phase - teal waves */
         #wave-bg.reflecting svg path:nth-child(1) { stroke: #14b8a6 !important; }
         #wave-bg.reflecting svg path:nth-child(2) { stroke: #22d3ee !important; }
         #wave-bg.reflecting svg path:nth-child(3) { stroke: #67e8f9 !important; }
@@ -81,14 +82,13 @@
         </div>
     </div>
 
-    <!-- MAIN CHAT AREA -->
+    <!-- MAIN CHAT -->
     <div class="flex-1 flex flex-col relative z-10">
         <div class="h-14 border-b border-gray-800 flex items-center px-6 justify-between bg-gray-900">
             <span id="session-title" class="font-semibold text-lg">New Conversation</span>
             
-            <!-- DAY / NIGHT TOGGLE -->
-            <button onclick="toggleDayNight()" id="theme-toggle"
-                    class="flex items-center gap-2 text-gray-400 hover:text-white text-xl">
+            <!-- Day/Night Toggle -->
+            <button onclick="toggleDayNight()" id="theme-toggle" class="flex items-center gap-2 text-gray-400 hover:text-white text-xl">
                 <i class="fa-solid fa-sun"></i>
             </button>
             
@@ -119,20 +119,19 @@
         const waveBg = document.getElementById('wave-bg');
         const themeToggle = document.getElementById('theme-toggle');
 
-        // Auto day/night based on local time
         function autoDetectTheme() {
             const hour = new Date().getHours();
-            const isDay = hour >= 6 && hour < 19;   // 6 AM - 7 PM = day
+            const isDay = hour >= 6 && hour < 19;
             waveBg.classList.toggle('day', isDay);
             waveBg.classList.toggle('night', !isDay);
             themeToggle.innerHTML = isDay ? '<i class="fa-solid fa-moon"></i>' : '<i class="fa-solid fa-sun"></i>';
         }
 
         function toggleDayNight() {
-            const isCurrentlyDay = waveBg.classList.contains('day');
-            waveBg.classList.toggle('day', !isCurrentlyDay);
-            waveBg.classList.toggle('night', isCurrentlyDay);
-            themeToggle.innerHTML = isCurrentlyDay ? '<i class="fa-solid fa-sun"></i>' : '<i class="fa-solid fa-moon"></i>';
+            const isDay = waveBg.classList.contains('day');
+            waveBg.classList.toggle('day', !isDay);
+            waveBg.classList.toggle('night', isDay);
+            themeToggle.innerHTML = isDay ? '<i class="fa-solid fa-sun"></i>' : '<i class="fa-solid fa-moon"></i>';
         }
 
         function setWavePhase(phase) {
@@ -161,6 +160,7 @@
             addMessage(message, 'user');
             input.value = '';
 
+            // Minimal thinking message (no emojis)
             const aiDiv = addMessage('<span class="text-gray-400">Thinking...</span>', 'ai');
 
             try {
@@ -184,25 +184,23 @@
 
                     for (const line of lines) {
                         if (line.startsWith('data: ')) {
-                            try {
-                                const data = JSON.parse(line.slice(6));
+                            const data = JSON.parse(line.slice(6));
 
-                                if (data.phase) {
-                                    setWavePhase(data.phase);
+                            if (data.phase) {
+                                setWavePhase(data.phase);
 
-                                    if (data.phase === 'thinking') {
-                                        aiDiv.querySelector('div').innerHTML = '🧠 Thinking step-by-step...';
-                                    } else if (data.phase === 'reflecting') {
-                                        aiDiv.querySelector('div').innerHTML = '🔄 Reflecting & polishing...';
-                                    } else if (data.phase === 'final') {
-                                        aiDiv.querySelector('div').innerHTML = '';
-                                    }
-                                } 
-                                else if (data.token) {
-                                    aiDiv.querySelector('div').innerHTML += data.token;
-                                    chat.scrollTop = chat.scrollHeight;
+                                if (data.phase === 'thinking') {
+                                    aiDiv.querySelector('div').innerHTML = 'Thinking step-by-step...';
+                                } else if (data.phase === 'reflecting') {
+                                    aiDiv.querySelector('div').innerHTML = 'Reflecting & polishing...';
+                                } else if (data.phase === 'final') {
+                                    aiDiv.querySelector('div').innerHTML = '';
                                 }
-                            } catch(e) {}
+                            } 
+                            else if (data.token) {
+                                aiDiv.querySelector('div').innerHTML += data.token;
+                                chat.scrollTop = chat.scrollHeight;
+                            }
                         }
                     }
                 }
@@ -212,19 +210,17 @@
             }
         }
 
-        // Keyboard support
         input.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') sendMessage();
         });
 
-        // Sidebar placeholders
         function newSession() { location.reload(); }
         function clearChat() { chat.innerHTML = ''; }
         function clearAll() { 
             if (confirm('Clear all conversations and memory?')) chat.innerHTML = ''; 
         }
 
-        // Initialize
+        // Start
         window.onload = autoDetectTheme;
     </script>
 </body>
