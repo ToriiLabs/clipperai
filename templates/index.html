@@ -9,8 +9,16 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
         body { font-family: 'Inter', system-ui, sans-serif; }
-        .chat-bubble-user { background: #3b82f6; color: white; border-radius: 20px 20px 4px 20px; }
-        .chat-bubble-ai { background: #1f2937; border-radius: 20px 20px 20px 4px; }
+        
+        .chat-bubble-user { 
+            background: #3b82f6; 
+            color: white; 
+            border-radius: 20px 20px 4px 20px; 
+        }
+        .chat-bubble-ai { 
+            background: #1f2937; 
+            border-radius: 20px 20px 20px 4px; 
+        }
         .message { max-width: 80%; animation: fadeIn 0.2s ease; }
 
         /* HOKUSAI WAVE ANIMATION */
@@ -19,22 +27,21 @@
             inset: 0;
             pointer-events: none;
             z-index: -1;
-            opacity: 0.6;
+            opacity: 0.55;
             overflow: hidden;
-            transition: all 0.6s ease;
         }
-        #wave-bg svg { animation: waveDrift 12s linear infinite; }
-        @keyframes waveDrift { 0% { transform: translateX(0); } 100% { transform: translateX(-200px); } }
+        #wave-bg svg { animation: waveDrift 14s linear infinite; }
+        @keyframes waveDrift { 0% { transform: translateX(0); } 100% { transform: translateX(-250px); } }
 
         /* Thinking - vibrant blue */
         #wave-bg.thinking svg path:nth-child(1) { stroke: #0ea5e9; }
         #wave-bg.thinking svg path:nth-child(2) { stroke: #3b82f6; }
-        #wave-bg.thinking svg path:nth-child(3) { stroke: #60a5fa; animation-duration: 6s; }
+        #wave-bg.thinking svg path:nth-child(3) { stroke: #60a5fa; }
 
         /* Reflecting - cyan/teal */
         #wave-bg.reflecting svg path:nth-child(1) { stroke: #14b8a6; }
         #wave-bg.reflecting svg path:nth-child(2) { stroke: #22d3ee; }
-        #wave-bg.reflecting svg path:nth-child(3) { stroke: #67e8f9; animation-duration: 8s; }
+        #wave-bg.reflecting svg path:nth-child(3) { stroke: #67e8f9; }
 
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
@@ -59,10 +66,13 @@
             <i class="fa-solid fa-plus"></i>
             <span class="font-medium">New Conversation</span>
         </div>
+        
         <div class="px-4 py-2 text-xs uppercase tracking-widest text-gray-400 mt-6">Conversations</div>
         <div id="history-list" class="flex-1 overflow-y-auto px-2 space-y-1 text-sm"></div>
+        
         <div class="px-4 py-2 text-xs uppercase tracking-widest text-gray-400">Memory</div>
         <div id="clips-list" class="flex-1 overflow-y-auto px-4 space-y-3 text-sm"></div>
+        
         <div class="p-4 border-t border-gray-800 text-xs text-gray-500 flex items-center justify-between">
             <span onclick="clearAll()" class="cursor-pointer hover:text-white">Clear All</span>
         </div>
@@ -85,8 +95,8 @@
                 <input id="input" type="text" placeholder="Type your message..." 
                        class="flex-1 bg-gray-800 border border-gray-700 focus:border-blue-500 rounded-3xl px-6 py-4 outline-none text-lg"
                        onkeydown="if(event.key === 'Enter') sendMessage();">
-                <button id="send" onclick="sendMessage()" 
-                        class="bg-blue-600 hover:bg-blue-700 w-12 h-12 rounded-3xl flex items-center justify-center">
+                <button onclick="sendMessage()" 
+                        class="bg-blue-600 hover:bg-blue-700 w-12 h-12 rounded-3xl flex items-center justify-center text-white">
                     <i class="fa-solid fa-paper-plane"></i>
                 </button>
             </div>
@@ -108,7 +118,7 @@
             const div = document.createElement('div');
             div.className = `flex ${type === 'user' ? 'justify-end' : 'justify-start'} message`;
             div.innerHTML = `
-                <div class="${type === 'user' ? 'chat-bubble-user' : 'chat-bubble-ai'} px-5 py-4 max-w-[80%]">
+                <div class="${type === 'user' ? 'chat-bubble-user' : 'chat-bubble-ai'} px-5 py-4">
                     ${text}
                 </div>
             `;
@@ -117,6 +127,75 @@
             return div;
         }
 
-        function sendMessage() {
+        async function sendMessage() {
             const message = input.value.trim();
             if (!message) return;
+
+            addMessage(message, 'user');
+            input.value = '';
+
+            const aiDiv = addMessage('<span class="text-gray-400">Thinking...</span>', 'ai');
+
+            try {
+                const response = await fetch('/api/stream', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: message })
+                });
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let buffer = '';
+
+                while (true) {
+                    const { value, done } = await reader.read();
+                    if (done) break;
+
+                    buffer += decoder.decode(value, { stream: true });
+                    const lines = buffer.split('\n');
+                    buffer = lines.pop() || '';
+
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            try {
+                                const data = JSON.parse(line.slice(6));
+
+                                if (data.phase) {
+                                    setWavePhase(data.phase);
+
+                                    if (data.phase === 'thinking') {
+                                        aiDiv.querySelector('div').innerHTML = '🧠 Thinking step-by-step...';
+                                    } else if (data.phase === 'reflecting') {
+                                        aiDiv.querySelector('div').innerHTML = '🔄 Reflecting & polishing...';
+                                    } else if (data.phase === 'final') {
+                                        aiDiv.querySelector('div').innerHTML = '';
+                                    }
+                                } 
+                                else if (data.token) {
+                                    aiDiv.querySelector('div').innerHTML += data.token;
+                                    chat.scrollTop = chat.scrollHeight;
+                                }
+                            } catch(e) {}
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Stream error:', error);
+                aiDiv.querySelector('div').innerHTML = 'Error connecting to model.';
+            }
+        }
+
+        // Keyboard support
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+        // Sidebar placeholders
+        function newSession() { location.reload(); }
+        function clearChat() { chat.innerHTML = ''; }
+        function clearAll() { 
+            if (confirm('Clear all conversations and memory?')) chat.innerHTML = ''; 
+        }
+    </script>
+</body>
+</html>
