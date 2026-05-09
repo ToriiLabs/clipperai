@@ -12,9 +12,9 @@
         
         .chat-bubble-user { background: #3b82f6; color: white; border-radius: 20px 20px 4px 20px; }
         .chat-bubble-ai { background: #1f2937; border-radius: 20px 20px 20px 4px; }
-        .message { max-width: 80%; animation: fadeIn 0.2s ease; }
+        .message { max-width: 80%; animation: fadeIn 0.3s ease; }
 
-        /* HOKUSAI WAVE BACKGROUND */
+        /* HOKUSAI WAVE - always visible base */
         #wave-bg {
             position: fixed;
             inset: 0;
@@ -37,15 +37,21 @@
         #wave-bg.day svg path:nth-child(2) { stroke: #22d3ee; }
         #wave-bg.day svg path:nth-child(3) { stroke: #67e8f9; }
 
-        /* Thinking phase - strong blue waves */
+        /* THINKING PHASE - strong blue wave (agent-like) */
+        #wave-bg.thinking {
+            opacity: 0.95 !important;
+        }
         #wave-bg.thinking svg path:nth-child(1) { stroke: #0ea5e9 !important; }
         #wave-bg.thinking svg path:nth-child(2) { stroke: #3b82f6 !important; }
-        #wave-bg.thinking svg path:nth-child(3) { stroke: #60a5fa !important; }
+        #wave-bg.thinking svg path:nth-child(3) { stroke: #60a5fa !important; animation-duration: 6s; }
 
-        /* Reflecting phase - teal waves */
+        /* REFLECTING PHASE - teal wave */
+        #wave-bg.reflecting {
+            opacity: 0.95 !important;
+        }
         #wave-bg.reflecting svg path:nth-child(1) { stroke: #14b8a6 !important; }
         #wave-bg.reflecting svg path:nth-child(2) { stroke: #22d3ee !important; }
-        #wave-bg.reflecting svg path:nth-child(3) { stroke: #67e8f9 !important; }
+        #wave-bg.reflecting svg path:nth-child(3) { stroke: #67e8f9 !important; animation-duration: 8s; }
 
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
@@ -87,7 +93,6 @@
         <div class="h-14 border-b border-gray-800 flex items-center px-6 justify-between bg-gray-900">
             <span id="session-title" class="font-semibold text-lg">New Conversation</span>
             
-            <!-- Day/Night Toggle -->
             <button onclick="toggleDayNight()" id="theme-toggle" class="flex items-center gap-2 text-gray-400 hover:text-white text-xl">
                 <i class="fa-solid fa-sun"></i>
             </button>
@@ -136,18 +141,15 @@
 
         function setWavePhase(phase) {
             waveBg.classList.remove('thinking', 'reflecting');
-            if (phase === 'thinking') waveBg.classList.add('thinking');
-            if (phase === 'reflecting') waveBg.classList.add('reflecting');
+            if (phase === 'thinking' || phase === 'reflecting') {
+                waveBg.classList.add(phase);
+            }
         }
 
         function addMessage(text, type) {
             const div = document.createElement('div');
             div.className = `flex ${type === 'user' ? 'justify-end' : 'justify-start'} message`;
-            div.innerHTML = `
-                <div class="${type === 'user' ? 'chat-bubble-user' : 'chat-bubble-ai'} px-5 py-4">
-                    ${text}
-                </div>
-            `;
+            div.innerHTML = `<div class="${type === 'user' ? 'chat-bubble-user' : 'chat-bubble-ai'} px-5 py-4">${text}</div>`;
             chat.appendChild(div);
             chat.scrollTop = chat.scrollHeight;
             return div;
@@ -160,7 +162,6 @@
             addMessage(message, 'user');
             input.value = '';
 
-            // Minimal thinking message (no emojis)
             const aiDiv = addMessage('<span class="text-gray-400">Thinking...</span>', 'ai');
 
             try {
@@ -198,8 +199,10 @@
                                 }
                             } 
                             else if (data.token) {
+                                // SLOWER streaming - more natural Grok feel
                                 aiDiv.querySelector('div').innerHTML += data.token;
                                 chat.scrollTop = chat.scrollHeight;
+                                await new Promise(resolve => setTimeout(resolve, 12)); // ← slows it down nicely
                             }
                         }
                     }
@@ -210,9 +213,7 @@
             }
         }
 
-        input.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') sendMessage();
-        });
+        input.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
 
         function newSession() { location.reload(); }
         function clearChat() { chat.innerHTML = ''; }
@@ -220,7 +221,6 @@
             if (confirm('Clear all conversations and memory?')) chat.innerHTML = ''; 
         }
 
-        // Start
         window.onload = autoDetectTheme;
     </script>
 </body>
