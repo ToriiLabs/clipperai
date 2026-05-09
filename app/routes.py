@@ -22,19 +22,11 @@ def stream_chat():
         for chunk in generate_with_reflection(user_message):
             if chunk.startswith("PHASE:"):
                 phase = chunk.split(":", 1)[1]
-                if phase == "THINKING":
-                    yield f"data: {json.dumps({'phase': 'thinking', 'text': '🧠 Thinking step-by-step...'})} \n\n"
-                elif phase == "REFLECTING":
-                    yield f"data: {json.dumps({'phase': 'reflecting', 'text': '🔄 Reflecting & polishing...'})} \n\n"
-                elif phase == "FINAL":
-                    yield f"data: {json.dumps({'phase': 'final', 'text': ''})} \n\n"
-                elif phase == "ERROR":
-                    yield f"data: {json.dumps({'error': chunk.split('\n', 1)[1]})} \n\n"
+                if phase in ["THINKING", "REFLECTING", "FINAL", "ERROR"]:
+                    yield f"data: {json.dumps({'phase': phase.lower()})} \n\n"
             else:
-                # Stream the actual content
                 if chunk.startswith("THINKING:"):
-                    text = chunk[9:]
-                    yield f"data: {json.dumps({'thinking': text})} \n\n"
+                    yield f"data: {json.dumps({'thinking': chunk[9:]})} \n\n"
                 elif chunk.startswith("FINAL:"):
                     yield f"data: {json.dumps({'token': chunk[6:]})} \n\n"
 
