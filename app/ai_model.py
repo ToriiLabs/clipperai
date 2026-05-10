@@ -3,7 +3,7 @@ from langchain_ollama import ChatOllama
 from langchain_core.messages import HumanMessage, SystemMessage
 import logging
 from .vector_memory import vector_memory
-from .Agent import agent   # ← LangGraph agent is now imported here
+from .agent import agent   
 
 logger = logging.getLogger(__name__)
 
