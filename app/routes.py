@@ -5,7 +5,8 @@ import json
 from .ai_model import generate_with_reflection
 from .models import db, Conversation
 
-bp = Blueprint('routes', __name__)   # ← Fixed here
+# Correct Blueprint line
+bp = Blueprint('routes', __name__)
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +34,6 @@ def stream_chat():
                 elif chunk.startswith("TOKEN:"):
                     token = chunk.split(":", 1)[1]
                     yield f"data: {json.dumps({'token': token})}\n\n"
-                
                 else:
                     yield f"data: {json.dumps({'token': str(chunk)})}\n\n"
 
