@@ -1,5 +1,5 @@
 # app/routes.py
-from flask import Blueprint, request, jsonify, Response, render_template, current_app
+from flask import Blueprint, request, jsonify, Response, render_template
 import logging
 import json
 from .ai_model import generate_with_reflection
@@ -23,7 +23,6 @@ def stream_chat():
         return jsonify({"error": "Message required"}), 400
 
     def generate():
-        # Send phases + tokens exactly as frontend expects
         for chunk in generate_with_reflection(user_message):
             if chunk.startswith("PHASE:"):
                 phase = chunk.split(":", 1)[1].strip().lower()
@@ -32,7 +31,6 @@ def stream_chat():
                 token = chunk.split(":", 1)[1]
                 yield f"data: {json.dumps({'token': token})}\n\n"
             else:
-                # fallback text
                 yield f"data: {json.dumps({'token': chunk})}\n\n"
 
     return Response(generate(), mimetype='text/event-stream')
