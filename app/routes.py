@@ -5,7 +5,8 @@ import json
 from .ai_model import generate_with_reflection
 from .models import db, Conversation
 
-bp = Blueprint('routes', name='routes', __name__)
+bp = Blueprint('routes', __name__)   # ← Fixed here
+
 logger = logging.getLogger(__name__)
 
 
@@ -24,7 +25,6 @@ def stream_chat():
 
     def generate():
         try:
-            # Stream phases and tokens from ai_model
             for chunk in generate_with_reflection(user_message):
                 if chunk.startswith("PHASE:"):
                     phase = chunk.split(":", 1)[1].strip().lower()
@@ -35,8 +35,7 @@ def stream_chat():
                     yield f"data: {json.dumps({'token': token})}\n\n"
                 
                 else:
-                    # Fallback for any raw text
-                    yield f"data: {json.dumps({'token': chunk})}\n\n"
+                    yield f"data: {json.dumps({'token': str(chunk)})}\n\n"
 
         except Exception as e:
             logger.error(f"Streaming error: {str(e)}", exc_info=True)
@@ -73,7 +72,8 @@ def clear_all():
     try:
         db.session.query(Conversation).delete()
         from .vector_memory import vector_memory
-        vector_memory.memories.clear()
+        if hasattr(vector_memory, 'memories'):
+            vector_memory.memories.clear()
         db.session.commit()
         return jsonify({"status": "cleared"})
     except Exception as e:
