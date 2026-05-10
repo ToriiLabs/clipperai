@@ -19,10 +19,11 @@ def get_llm():
             num_ctx=16384,
             num_thread=12,
             top_p=0.95,
+            # Removed deprecated options that were causing warnings
+            # (mirostat, tfs_z, mirostat_eta, mirostat_tau)
         )
         logger.info("✅ Model loaded!")
     return llm
-
 
 def generate_response(user_message: str) -> str:
     """Non-streaming version used by LangGraph agent (thinking + reflection)"""
