@@ -24,7 +24,7 @@
             animation: fadeIn 0.3s ease;
         }
 
-        /* HOKUSAI WAVE BACKGROUND */
+        /* HOKUSAI WAVE - Main Agent Visual */
         #wave-bg {
             position: fixed;
             inset: 0;
@@ -34,11 +34,11 @@
             overflow: hidden;
             transition: all 0.6s ease;
         }
-        #wave-bg svg { animation: waveDrift 9s linear infinite; }
+        #wave-bg svg { animation: waveDrift 8s linear infinite; }
 
         @keyframes waveDrift {
             0% { transform: translateX(0); }
-            100% { transform: translateX(-300px); }
+            100% { transform: translateX(-320px); }
         }
 
         /* NIGHT (Default) */
@@ -51,15 +51,22 @@
         #wave-bg.day svg path:nth-child(2) { stroke: #22d3ee !important; }
         #wave-bg.day svg path:nth-child(3) { stroke: #a5f3fc !important; }
 
-        /* THINKING - Grok style vibrant blue */
+        /* THINKING - Strong Grok-style waves */
         #wave-bg.thinking svg path:nth-child(1) { stroke: #0ea5e9 !important; }
         #wave-bg.thinking svg path:nth-child(2) { stroke: #3b82f6 !important; }
         #wave-bg.thinking svg path:nth-child(3) { stroke: #60a5fa !important; }
 
-        /* REFLECTING - Teal */
+        /* REFLECTING */
         #wave-bg.reflecting svg path:nth-child(1) { stroke: #14b8a6 !important; }
         #wave-bg.reflecting svg path:nth-child(2) { stroke: #22d3ee !important; }
         #wave-bg.reflecting svg path:nth-child(3) { stroke: #67e8f9 !important; }
+
+        /* Boost wave intensity when active */
+        #wave-bg.thinking,
+        #wave-bg.reflecting {
+            opacity: 0.95;
+            filter: brightness(1.15) saturate(1.4);
+        }
 
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
@@ -100,7 +107,6 @@
     <div class="flex-1 flex flex-col relative z-10">
         <div class="h-14 border-b border-gray-800 flex items-center px-6 justify-between bg-gray-900">
             <span id="session-title" class="font-semibold text-lg">New Conversation</span>
-            
             <div class="flex items-center gap-4">
                 <button onclick="toggleDayNight()" id="theme-toggle" class="flex items-center gap-2 text-gray-400 hover:text-white text-xl">
                     <i class="fa-solid fa-sun"></i>
@@ -135,7 +141,7 @@
     function addMessage(text, type) {
         const div = document.createElement('div');
         div.className = `flex ${type === 'user' ? 'justify-end' : 'justify-start'} message`;
-        div.innerHTML = `<div class="${type === 'user' ? 'chat-bubble-user' : 'chat-bubble-ai'} px-5 py-4">${text}</div>`;
+        div.innerHTML = `<div class="${type === 'user' ? 'chat-bubble-user' : 'chat-bubble-ai'} px-5 py-4 prose prose-invert max-w-none">${text}</div>`;
         chat.appendChild(div);
         chat.scrollTop = chat.scrollHeight;
         return div;
@@ -148,6 +154,13 @@
         }
     }
 
+    function renderStreaming(text) {
+        return text
+            .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*(.+?)\*/g, '<em>$1</em>')
+            .replace(/`(.+?)`/g, '<code class="bg-gray-800 px-1 rounded">$1</code>');
+    }
+
     async function sendMessage() {
         const message = input.value.trim();
         if (!message) return;
@@ -155,7 +168,7 @@
         addMessage(message, 'user');
         input.value = '';
 
-        currentAiDiv = addMessage('<span class="text-gray-400 italic">Thinking...</span>', 'ai');
+        currentAiDiv = addMessage('<span class="text-gray-400 italic">...</span>', 'ai');
 
         try {
             const response = await fetch('/api/stream', {
@@ -181,7 +194,6 @@
 
                 for (const line of lines) {
                     if (!line.startsWith('data: ')) continue;
-
                     const dataStr = line.slice(6).trim();
                     if (!dataStr) continue;
 
@@ -189,25 +201,23 @@
                         const data = JSON.parse(dataStr);
 
                         if (data.phase) {
-                            console.log('Phase:', data.phase);
+                            console.log('🌊 Phase:', data.phase);
                             setWavePhase(data.phase);
 
                             const bubble = currentAiDiv.querySelector('div');
                             if (data.phase === 'thinking') {
-                                bubble.innerHTML = 'Thinking step-by-step...';
+                                bubble.innerHTML = '<span class="text-gray-400 italic">thinking...</span>';
                             } else if (data.phase === 'reflecting') {
-                                bubble.innerHTML = 'Reflecting & polishing...';
+                                bubble.innerHTML = '<span class="text-gray-400 italic">refining...</span>';
                             } else if (data.phase === 'final') {
                                 setWavePhase(null);
+                                bubble.innerHTML = '';
                             }
                         } 
                         else if (data.token) {
                             fullText += data.token;
                             const bubble = currentAiDiv.querySelector('div');
-                            let html = fullText
-                                .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-                                .replace(/\*(.+?)\*/g, '<em>$1</em>');
-                            bubble.innerHTML = html;
+                            bubble.innerHTML = renderStreaming(fullText);
                             chat.scrollTop = chat.scrollHeight;
                         }
                     } catch (e) {
@@ -233,6 +243,7 @@
 
     function newSession() { location.reload(); }
     function clearChat() { chat.innerHTML = ''; }
+
     async function clearAll() {
         if (!confirm('Clear ALL conversations and memory?')) return;
         await fetch('/api/clear', { method: 'POST' });
@@ -244,12 +255,14 @@
         try {
             const histRes = await fetch('/api/history');
             const hist = await histRes.json();
-            // Add your history rendering here if needed
+            document.getElementById('history-list').innerHTML = hist.sessions.length
+                ? hist.sessions.map(s => `<div class="px-4 py-2 hover:bg-gray-800 rounded-xl cursor-pointer text-sm">${s}</div>`).join('')
+                : '<div class="px-4 py-2 text-gray-500 text-sm">No conversations yet</div>';
         } catch (e) {}
     }
 
     window.onload = () => {
-        console.log('🌊 ClipperAI - Day/Night + Wave Agents Fixed');
+        console.log('🌊 ClipperAI - Hokusai Wave Agent Mode Ready');
         loadSidebar();
     };
     </script>
