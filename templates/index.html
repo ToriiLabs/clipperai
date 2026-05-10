@@ -148,11 +148,15 @@
         const aiDiv = addMessage('<span class="text-gray-400">Thinking...</span>', 'ai');
 
         try {
+            console.log('📤 Sending:', message);
+
             const response = await fetch('/api/stream', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ message })
             });
+
+            if (!response.ok) throw new Error(`Server error ${response.status}`);
 
             const reader = response.body.getReader();
             const decoder = new TextDecoder();
@@ -163,52 +167,59 @@
                 if (done) break;
 
                 buffer += decoder.decode(value, { stream: true });
+
                 const lines = buffer.split('\n');
-                buffer = lines.pop() || '';
+                buffer = lines.pop() || '';   // keep only the incomplete line
 
                 for (const line of lines) {
                     if (line.startsWith('data: ')) {
-                        const data = JSON.parse(line.slice(6));
+                        const jsonStr = line.slice(6).trim();
+                        if (!jsonStr) continue;
 
-                        if (data.phase) {
-                            if (data.phase === 'thinking') {
-                                aiDiv.querySelector('div').innerHTML = 'Thinking step-by-step...';
-                                waveBg.classList.add('thinking');
-                            } else if (data.phase === 'reflecting') {
-                                aiDiv.querySelector('div').innerHTML = 'Reflecting & polishing...';
-                                waveBg.classList.remove('thinking');
-                                waveBg.classList.add('reflecting');
-                            } else if (data.phase === 'final') {
-                                aiDiv.querySelector('div').innerHTML = '';
-                                waveBg.classList.remove('thinking', 'reflecting');
+                        try {
+                            const data = JSON.parse(jsonStr);
+
+                            if (data.phase) {
+                                console.log('📡 Phase:', data.phase);
+                                if (data.phase === 'thinking') {
+                                    aiDiv.querySelector('div').innerHTML = 'Thinking step-by-step...';
+                                    waveBg.classList.add('thinking');
+                                } else if (data.phase === 'reflecting') {
+                                    aiDiv.querySelector('div').innerHTML = 'Reflecting & polishing...';
+                                    waveBg.classList.remove('thinking');
+                                    waveBg.classList.add('reflecting');
+                                } else if (data.phase === 'final') {
+                                    aiDiv.querySelector('div').innerHTML = '';
+                                    waveBg.classList.remove('thinking', 'reflecting');
+                                }
+                            } 
+                            else if (data.token) {
+                                aiDiv.querySelector('div').innerHTML += data.token;
+                                chat.scrollTop = chat.scrollHeight;
                             }
-                        } 
-                        else if (data.token) {
-                            aiDiv.querySelector('div').innerHTML += data.token;
-                            chat.scrollTop = chat.scrollHeight;
+                        } catch (parseErr) {
+                            console.warn('JSON parse failed:', jsonStr);
                         }
                     }
                 }
             }
+
+            console.log('✅ Stream completed successfully');
         } catch (error) {
-            console.error('Stream error:', error);
-            aiDiv.querySelector('div').innerHTML = '❌ Error connecting to AI';
+            console.error('🚨 Streaming error:', error);
+            aiDiv.querySelector('div').innerHTML = `❌ ${error.message}`;
         }
     }
 
+    // Rest of your functions (unchanged)
     function toggleDayNight() {
         const isDay = waveBg.classList.contains('day');
         waveBg.classList.toggle('day', !isDay);
         waveBg.classList.toggle('night', isDay);
     }
 
-    function newSession() {
-        location.reload();
-    }
-
-    function clearChat() {
-        chat.innerHTML = '';
-    }
+    function newSession() { location.reload(); }
+    function clearChat() { chat.innerHTML = ''; }
 
     async function clearAll() {
         if (!confirm('Clear ALL conversations and memory?')) return;
@@ -222,17 +233,13 @@
             const histRes = await fetch('/api/history');
             const hist = await histRes.json();
             historyList.innerHTML = hist.sessions.length 
-                ? hist.sessions.map(s => 
-                    `<div class="px-4 py-2 hover:bg-gray-800 rounded-xl cursor-pointer text-sm">${s}</div>`
-                  ).join('')
+                ? hist.sessions.map(s => `<div class="px-4 py-2 hover:bg-gray-800 rounded-xl cursor-pointer text-sm">${s}</div>`).join('')
                 : '<div class="px-4 py-2 text-gray-500 text-sm">No conversations yet</div>';
 
             const clipsRes = await fetch('/api/clips');
             const clipsData = await clipsRes.json();
             clipsList.innerHTML = clipsData.clips.length
-                ? clipsData.clips.map(c => 
-                    `<div class="bg-gray-800 p-3 rounded-2xl text-sm">${c}</div>`
-                  ).join('')
+                ? clipsData.clips.map(c => `<div class="bg-gray-800 p-3 rounded-2xl text-sm">${c}</div>`).join('')
                 : '<div class="px-4 py-2 text-gray-500 text-sm">Memory empty</div>';
         } catch (e) {
             console.error('Sidebar load error:', e);
@@ -245,8 +252,6 @@
 
     window.onload = () => {
         loadSidebar();
-        console.log('🌊 ClipperAI + LangGraph Agent Ready!');
+        console.log('🌊 ClipperAI frontend ready!');
     };
-    </script>
-</body>
-</html>
+</script>
