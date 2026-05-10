@@ -1,12 +1,14 @@
+# app/Agent.py
 from langgraph.graph import StateGraph, END
 from typing import TypedDict, Annotated
 import operator
-from .ai_model import generate_response
 
 class AgentState(TypedDict):
     messages: Annotated[list, operator.add]
 
 def call_llm(state: AgentState):
+    # Lazy import to avoid circular imports with ai_model
+    from .ai_model import generate_response
     last_message = state["messages"][-1]
     response = generate_response(last_message)
     return {"messages": [response]}
