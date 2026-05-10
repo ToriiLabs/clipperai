@@ -20,5 +20,8 @@ class VectorMemory:
     def search_memory(self, query: str, n_results: int = 6) -> List[str]:
         if not self.memories:
             return []
-        # Simple recency-based retrieval (can be upgraded later)
+        # Simple recency-based retrieval
         return [m["text"] for m in self.memories[-n_results:]]
+
+# ←←← THIS LINE WAS MISSING ←←←
+vector_memory = VectorMemory()
