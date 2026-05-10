@@ -24,23 +24,24 @@
             animation: fadeIn 0.3s ease;
         }
 
-        /* HOKUSAI WAVE */
+        /* HOKUSAI WAVE BACKGROUND */
         #wave-bg {
             position: fixed;
             inset: 0;
             pointer-events: none;
             z-index: -1;
-            opacity: 0.75;
+            opacity: 0.8;
             overflow: hidden;
             transition: all 0.6s ease;
         }
-        #wave-bg svg { animation: waveDrift 10s linear infinite; }
+        #wave-bg svg { animation: waveDrift 9s linear infinite; }
+
         @keyframes waveDrift {
             0% { transform: translateX(0); }
-            100% { transform: translateX(-250px); }
+            100% { transform: translateX(-300px); }
         }
 
-        /* NIGHT (default) */
+        /* NIGHT (Default) */
         #wave-bg.night svg path:nth-child(1) { stroke: #1e2937 !important; }
         #wave-bg.night svg path:nth-child(2) { stroke: #334155 !important; }
         #wave-bg.night svg path:nth-child(3) { stroke: #60a5fa !important; }
@@ -50,15 +51,15 @@
         #wave-bg.day svg path:nth-child(2) { stroke: #22d3ee !important; }
         #wave-bg.day svg path:nth-child(3) { stroke: #a5f3fc !important; }
 
-        /* THINKING - Grok-like vibrant */
+        /* THINKING - Grok style vibrant blue */
         #wave-bg.thinking svg path:nth-child(1) { stroke: #0ea5e9 !important; }
         #wave-bg.thinking svg path:nth-child(2) { stroke: #3b82f6 !important; }
-        #wave-bg.thinking svg path:nth-child(3) { stroke: #60a5fa !important; animation-duration: 5s; }
+        #wave-bg.thinking svg path:nth-child(3) { stroke: #60a5fa !important; }
 
-        /* REFLECTING */
+        /* REFLECTING - Teal */
         #wave-bg.reflecting svg path:nth-child(1) { stroke: #14b8a6 !important; }
         #wave-bg.reflecting svg path:nth-child(2) { stroke: #22d3ee !important; }
-        #wave-bg.reflecting svg path:nth-child(3) { stroke: #67e8f9 !important; animation-duration: 7s; }
+        #wave-bg.reflecting svg path:nth-child(3) { stroke: #67e8f9 !important; }
 
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
@@ -77,14 +78,22 @@
         </svg>
     </div>
 
-    <!-- SIDEBAR (unchanged) -->
+    <!-- SIDEBAR -->
     <div class="w-80 bg-gray-900 border-r border-gray-800 flex flex-col relative z-10">
-        <!-- ... your sidebar code ... -->
+        <div class="p-4 border-b border-gray-800 flex items-center gap-3">
+            <h1 class="text-2xl font-semibold tracking-tight">ClipperAI</h1>
+        </div>
         <div onclick="newSession()" class="mx-4 mt-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl py-3 px-4 flex items-center justify-center gap-2 cursor-pointer transition-colors">
             <i class="fa-solid fa-plus"></i>
             <span class="font-medium">New Conversation</span>
         </div>
-        <!-- ... rest of sidebar ... -->
+        <div class="px-4 py-2 text-xs uppercase tracking-widest text-gray-400 mt-6">Conversations</div>
+        <div id="history-list" class="flex-1 overflow-y-auto px-2 space-y-1 text-sm"></div>
+        <div class="px-4 py-2 text-xs uppercase tracking-widest text-gray-400">Memory</div>
+        <div id="clips-list" class="flex-1 overflow-y-auto px-4 space-y-3 text-sm"></div>
+        <div class="p-4 border-t border-gray-800 text-xs text-gray-500 flex items-center justify-between">
+            <span onclick="clearAll()" class="cursor-pointer hover:text-white">Clear All</span>
+        </div>
     </div>
 
     <!-- MAIN CHAT -->
@@ -121,7 +130,6 @@
     const chat = document.getElementById('chat');
     const input = document.getElementById('input');
     const waveBg = document.getElementById('wave-bg');
-
     let currentAiDiv = null;
 
     function addMessage(text, type) {
@@ -134,7 +142,7 @@
     }
 
     function setWavePhase(phase) {
-        waveBg.classList.remove('thinking', 'reflecting', 'day', 'night');
+        waveBg.classList.remove('thinking', 'reflecting');
         if (phase === 'thinking' || phase === 'reflecting') {
             waveBg.classList.add(phase);
         }
@@ -147,7 +155,6 @@
         addMessage(message, 'user');
         input.value = '';
 
-        // Add placeholder
         currentAiDiv = addMessage('<span class="text-gray-400 italic">Thinking...</span>', 'ai');
 
         try {
@@ -162,6 +169,7 @@
             const reader = response.body.getReader();
             const decoder = new TextDecoder();
             let buffer = '';
+            let fullText = '';
 
             while (true) {
                 const { value, done } = await reader.read();
@@ -172,35 +180,38 @@
                 buffer = lines.pop() || '';
 
                 for (const line of lines) {
-                    if (line.startsWith('data: ')) {
-                        const dataStr = line.slice(6).trim();
-                        if (!dataStr) continue;
+                    if (!line.startsWith('data: ')) continue;
 
-                        try {
-                            const data = JSON.parse(dataStr);
+                    const dataStr = line.slice(6).trim();
+                    if (!dataStr) continue;
 
-                            if (data.phase) {
-                                console.log('Phase:', data.phase);
-                                setWavePhase(data.phase);
+                    try {
+                        const data = JSON.parse(dataStr);
 
-                                if (data.phase === 'thinking') {
-                                    currentAiDiv.querySelector('div').innerHTML = 'Thinking step-by-step...';
-                                } else if (data.phase === 'reflecting') {
-                                    currentAiDiv.querySelector('div').innerHTML = 'Reflecting & polishing...';
-                                } else if (data.phase === 'final') {
-                                    currentAiDiv.querySelector('div').innerHTML = '';
-                                    setWavePhase(null);
-                                }
-                            } 
-                            else if (data.token) {
-                                // Append token like Grok
-                                const bubble = currentAiDiv.querySelector('div');
-                                bubble.innerHTML += data.token;
-                                chat.scrollTop = chat.scrollHeight;
+                        if (data.phase) {
+                            console.log('Phase:', data.phase);
+                            setWavePhase(data.phase);
+
+                            const bubble = currentAiDiv.querySelector('div');
+                            if (data.phase === 'thinking') {
+                                bubble.innerHTML = 'Thinking step-by-step...';
+                            } else if (data.phase === 'reflecting') {
+                                bubble.innerHTML = 'Reflecting & polishing...';
+                            } else if (data.phase === 'final') {
+                                setWavePhase(null);
                             }
-                        } catch (e) {
-                            console.warn('Parse error:', dataStr);
+                        } 
+                        else if (data.token) {
+                            fullText += data.token;
+                            const bubble = currentAiDiv.querySelector('div');
+                            let html = fullText
+                                .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                                .replace(/\*(.+?)\*/g, '<em>$1</em>');
+                            bubble.innerHTML = html;
+                            chat.scrollTop = chat.scrollHeight;
                         }
+                    } catch (e) {
+                        console.warn('Parse error:', dataStr);
                     }
                 }
             }
@@ -215,7 +226,6 @@
         waveBg.classList.toggle('night', !isNight);
         waveBg.classList.toggle('day', isNight);
 
-        // Update icon
         const icon = document.getElementById('theme-toggle').querySelector('i');
         icon.classList.toggle('fa-sun', !isNight);
         icon.classList.toggle('fa-moon', isNight);
@@ -223,11 +233,24 @@
 
     function newSession() { location.reload(); }
     function clearChat() { chat.innerHTML = ''; }
+    async function clearAll() {
+        if (!confirm('Clear ALL conversations and memory?')) return;
+        await fetch('/api/clear', { method: 'POST' });
+        chat.innerHTML = '';
+        loadSidebar();
+    }
 
-    // Load sidebar etc. (keep your existing functions)
+    async function loadSidebar() {
+        try {
+            const histRes = await fetch('/api/history');
+            const hist = await histRes.json();
+            // Add your history rendering here if needed
+        } catch (e) {}
+    }
+
     window.onload = () => {
-        console.log('🌊 ClipperAI ready with Grok-style waves!');
-        // loadSidebar() if you have it
+        console.log('🌊 ClipperAI - Day/Night + Wave Agents Fixed');
+        loadSidebar();
     };
     </script>
 </body>
