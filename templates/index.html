@@ -30,47 +30,61 @@
             animation: fadeIn 0.3s ease;
         }
 
-        /* === GROK-STYLE HOKUSAI WAVES (visible + dynamic) === */
+        /* === GROK-STYLE HOKUSAI WAVES (now visible + dynamic) === */
         #wave-bg {
             position: fixed;
             inset: 0;
             pointer-events: none;
             z-index: -1;
-            opacity: 0.9;
+            opacity: 0.92;
             overflow: hidden;
             transition: all 0.6s ease;
         }
         #wave-bg svg {
-            animation: waveDrift 7s linear infinite;
+            animation: waveDrift 6.5s linear infinite;
         }
 
         @keyframes waveDrift {
             0% { transform: translateX(0) rotate(0deg); }
-            100% { transform: translateX(-340px) rotate(5deg); }
+            100% { transform: translateX(-340px) rotate(4deg); }
         }
 
-        /* Strong pulsing + breathing when AI is thinking/reflecting */
+        /* Flowing "spinning" highlight wave */
+        #wave-highlight {
+            stroke-dasharray: 50 25;
+            animation: wave-flow 2.8s linear infinite;
+        }
+
+        @keyframes wave-flow {
+            to { stroke-dashoffset: -75; }
+        }
+
+        /* Strong pulse + faster flow when AI is thinking/reflecting */
         #wave-bg.thinking svg,
         #wave-bg.reflecting svg {
-            animation: waveDrift 3.5s linear infinite, wavePulse 2s ease-in-out infinite;
+            animation: waveDrift 3.2s linear infinite, wavePulse 1.8s ease-in-out infinite;
+        }
+        #wave-bg.thinking #wave-highlight,
+        #wave-bg.reflecting #wave-highlight {
+            animation: wave-flow 1.4s linear infinite;
         }
 
         @keyframes wavePulse {
-            0%, 100% { opacity: 0.85; transform: scale(1); }
-            50% { opacity: 1; transform: scale(1.06); }
+            0%, 100% { opacity: 0.88; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.09); }
         }
 
-        /* Night (default dark theme) */
-        #wave-bg.night svg path:nth-child(1) { stroke: #334155 !important; }
-        #wave-bg.night svg path:nth-child(2) { stroke: #64748b !important; }
+        /* Night (dark theme) - deep layered blues */
+        #wave-bg.night svg path:nth-child(1) { stroke: #1e3a5f !important; }
+        #wave-bg.night svg path:nth-child(2) { stroke: #3b6b9a !important; }
         #wave-bg.night svg path:nth-child(3) { stroke: #0ea5e9 !important; }
 
-        /* Day (light theme) */
+        /* Day (light theme) - visible but softer */
         #wave-bg.day svg path:nth-child(1) { stroke: #64748b !important; }
         #wave-bg.day svg path:nth-child(2) { stroke: #94a3b8 !important; }
         #wave-bg.day svg path:nth-child(3) { stroke: #38bdf8 !important; }
 
-        /* Thinking / Reflecting — vibrant & alive */
+        /* Thinking/Reflecting - vibrant pop regardless of theme */
         #wave-bg.thinking svg path:nth-child(1) { stroke: #0e7490 !important; }
         #wave-bg.thinking svg path:nth-child(2) { stroke: #06b6d4 !important; }
         #wave-bg.thinking svg path:nth-child(3) { stroke: #67e8f9 !important; }
@@ -79,14 +93,9 @@
         #wave-bg.reflecting svg path:nth-child(2) { stroke: #14b8a6 !important; }
         #wave-bg.reflecting svg path:nth-child(3) { stroke: #5eead4 !important; }
 
-        .thinking-dots {
-            display: inline-block;
-            width: 1.2em;
-            text-align: left;
-        }
         .thinking-dots::after {
             content: '...';
-            animation: thinkingDots 1.4s infinite steps(3);
+            animation: thinkingDots 1.3s infinite steps(3);
         }
         @keyframes thinkingDots {
             0% { content: '.'; }
@@ -100,30 +109,31 @@
         }
 
         #chat::-webkit-scrollbar { width: 6px; }
-        #chat::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+        #chat::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 3px; }
         .dark #chat::-webkit-scrollbar-thumb { background: #475569; }
     </style>
 </head>
 <body class="bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 flex h-screen overflow-hidden">
 
-    <!-- HOKUSAI WAVE BACKGROUND -->
+    <!-- HOKUSAI WAVE BACKGROUND (now visible in chat area) -->
     <div id="wave-bg" class="night">
         <svg width="100%" height="100%" viewBox="0 0 1440 900" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-            <!-- Layered waves for depth -->
-            <path d="M0 620 Q360 420 720 580 Q1080 720 1440 540 L1440 900 L0 900 Z" fill="none" stroke="#334155" stroke-width="130" stroke-opacity="0.75"/>
-            <path d="M0 660 Q300 500 720 640 Q1140 770 1440 590 L1440 900 L0 900 Z" fill="none" stroke="#64748b" stroke-width="75" stroke-opacity="0.65"/>
-            <path d="M180 590 Q260 530 340 580 Q420 520 500 575" fill="none" stroke="#0ea5e9" stroke-width="32" stroke-opacity="0.9"/>
+            <!-- Layered Hokusai-style waves for depth -->
+            <path d="M0 620 Q360 420 720 580 Q1080 720 1440 540 L1440 900 L0 900 Z" fill="none" stroke="#1e3a5f" stroke-width="135" stroke-opacity="0.8"/>
+            <path d="M0 660 Q300 500 720 640 Q1140 770 1440 590 L1440 900 L0 900 Z" fill="none" stroke="#3b6b9a" stroke-width="78" stroke-opacity="0.7"/>
+            <!-- Highlight wave with flowing animation -->
+            <path id="wave-highlight" d="M180 590 Q260 530 340 580 Q420 520 500 575" fill="none" stroke="#0ea5e9" stroke-width="30" stroke-opacity="0.95"/>
         </svg>
     </div>
 
-    <!-- SIDEBAR -->
+    <!-- SIDEBAR (solid, matches your screenshot) -->
     <div class="w-80 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col relative z-10">
         <div class="p-4 border-b border-gray-200 dark:border-gray-800 flex items-center gap-3">
             <h1 class="text-2xl font-semibold tracking-tight">ClipperAI</h1>
         </div>
         <div onclick="newSession()" class="mx-4 mt-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl py-3 px-4 flex items-center justify-center gap-2 cursor-pointer transition-colors">
             <i class="fa-solid fa-plus"></i>
-            <span class="font-medium">New Conversation</span>
+            <span class="font-medium">+ New Conversation</span>
         </div>
         <div class="px-4 py-2 text-xs uppercase tracking-widest text-gray-500 dark:text-gray-400 mt-6">CONVERSATIONS</div>
         <div id="history-list" class="flex-1 overflow-y-auto px-2 space-y-1 text-sm"></div>
@@ -136,6 +146,7 @@
 
     <!-- MAIN CHAT -->
     <div class="flex-1 flex flex-col relative z-10">
+        <!-- Header bar (solid) -->
         <div class="h-14 border-b border-gray-200 dark:border-gray-800 flex items-center px-6 justify-between bg-white dark:bg-gray-900">
             <span id="session-title" class="font-semibold text-lg">New Conversation</span>
             <div class="flex items-center gap-4">
@@ -149,8 +160,10 @@
             </div>
         </div>
 
-        <div id="chat" class="flex-1 overflow-y-auto p-6 space-y-8 bg-white dark:bg-gray-950"></div>
+        <!-- Chat area (TRANSPARENT so waves show through!) -->
+        <div id="chat" class="flex-1 overflow-y-auto p-6 space-y-8"></div>
 
+        <!-- Input bar (solid) -->
         <div class="p-4 border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
             <div class="flex gap-3">
                 <input id="input" type="text" placeholder="Type your message..."
@@ -260,14 +273,16 @@
 
     function toggleDayNight() {
         const html = document.documentElement;
-        const isDark = html.classList.contains('dark');
+        const isNight = waveBg.classList.contains('night');
 
-        if (isDark) {
+        if (isNight) {
+            // Switch to DAY / light
             html.classList.remove('dark');
             waveBg.classList.remove('night');
             waveBg.classList.add('day');
             document.getElementById('theme-toggle').querySelector('i').classList.replace('fa-sun', 'fa-moon');
         } else {
+            // Switch to NIGHT / dark
             html.classList.add('dark');
             waveBg.classList.remove('day');
             waveBg.classList.add('night');
@@ -307,7 +322,7 @@
 
     window.onload = () => {
         loadSidebar();
-        console.log('🌊 ClipperAI ready — waves + toggle fully working');
+        console.log('🌊 ClipperAI ready — waves visible + full theme toggle working');
     };
     </script>
 </body>
