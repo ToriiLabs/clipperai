@@ -107,108 +107,136 @@
     </div>
 
     <script>
-        const chat = document.getElementById('chat');
-        const input = document.getElementById('input');
-        const waveBg = document.getElementById('wave-bg');
-        const themeToggle = document.getElementById('theme-toggle');
+    const chat = document.getElementById('chat');
+    const input = document.getElementById('input');
+    const waveBg = document.getElementById('wave-bg');
+    const historyList = document.getElementById('history-list');
+    const clipsList = document.getElementById('clips-list');
 
-        function autoDetectTheme() {
-            const hour = new Date().getHours();
-            const isDay = hour >= 6 && hour < 19;
-            waveBg.classList.toggle('day', isDay);
-            waveBg.classList.toggle('night', !isDay);
-        }
+    function addMessage(text, type) {
+        const div = document.createElement('div');
+        div.className = `flex ${type === 'user' ? 'justify-end' : 'justify-start'} message`;
+        div.innerHTML = `<div class="${type === 'user' ? 'chat-bubble-user' : 'chat-bubble-ai'} px-5 py-4">${text}</div>`;
+        chat.appendChild(div);
+        chat.scrollTop = chat.scrollHeight;
+        return div;
+    }
 
-        function toggleDayNight() {
-            const isDay = waveBg.classList.contains('day');
-            waveBg.classList.toggle('day', !isDay);
-            waveBg.classList.toggle('night', isDay);
-            console.log('🌊 Day/Night toggled →', isDay ? 'NIGHT' : 'DAY');
-        }
+    async function sendMessage() {
+        const message = input.value.trim();
+        if (!message) return;
 
-        function setWavePhase(phase) {
-            waveBg.classList.remove('thinking', 'reflecting');
-            if (phase === 'thinking' || phase === 'reflecting') {
-                waveBg.classList.add(phase);
-                console.log('🌊 Wave phase activated:', phase.toUpperCase());
-            }
-        }
+        addMessage(message, 'user');
+        input.value = '';
 
-        function addMessage(text, type) {
-            const div = document.createElement('div');
-            div.className = `flex ${type === 'user' ? 'justify-end' : 'justify-start'} message`;
-            div.innerHTML = `<div class="${type === 'user' ? 'chat-bubble-user' : 'chat-bubble-ai'} px-5 py-4">${text}</div>`;
-            chat.appendChild(div);
-            chat.scrollTop = chat.scrollHeight;
-            return div;
-        }
+        const aiDiv = addMessage('<span class="text-gray-400">Thinking...</span>', 'ai');
 
-        async function sendMessage() {
-            const message = input.value.trim();
-            if (!message) return;
+        try {
+            const response = await fetch('/api/stream', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message })
+            });
 
-            addMessage(message, 'user');
-            input.value = '';
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
 
-            const aiDiv = addMessage('<span class="text-gray-400">Thinking...</span>', 'ai');
+            while (true) {
+                const { value, done } = await reader.read();
+                if (done) break;
 
-            try {
-                const response = await fetch('/api/stream', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: message })
-                });
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split('\n');
+                buffer = lines.pop() || '';
 
-                const reader = response.body.getReader();
-                const decoder = new TextDecoder();
-                let buffer = '';
+                for (const line of lines) {
+                    if (line.startsWith('data: ')) {
+                        const data = JSON.parse(line.slice(6));
 
-                while (true) {
-                    const { value, done } = await reader.read();
-                    if (done) break;
-
-                    buffer += decoder.decode(value, { stream: true });
-                    const lines = buffer.split('\n');
-                    buffer = lines.pop() || '';
-
-                    for (const line of lines) {
-                        if (line.startsWith('data: ')) {
-                            const data = JSON.parse(line.slice(6));
-
-                            if (data.phase) {
-                                setWavePhase(data.phase);
-
-                                if (data.phase === 'thinking') {
-                                    aiDiv.querySelector('div').innerHTML = 'Thinking step-by-step...';
-                                } else if (data.phase === 'reflecting') {
-                                    aiDiv.querySelector('div').innerHTML = 'Reflecting & polishing...';
-                                } else if (data.phase === 'final') {
-                                    aiDiv.querySelector('div').innerHTML = '';
-                                }
-                            } 
-                            else if (data.token) {
-                                aiDiv.querySelector('div').innerHTML += data.token;
-                                chat.scrollTop = chat.scrollHeight;
-                                await new Promise(r => setTimeout(r, 12));
+                        if (data.phase) {
+                            if (data.phase === 'thinking') {
+                                aiDiv.querySelector('div').innerHTML = 'Thinking step-by-step...';
+                                waveBg.classList.add('thinking');
+                            } else if (data.phase === 'reflecting') {
+                                aiDiv.querySelector('div').innerHTML = 'Reflecting & polishing...';
+                                waveBg.classList.remove('thinking');
+                                waveBg.classList.add('reflecting');
+                            } else if (data.phase === 'final') {
+                                aiDiv.querySelector('div').innerHTML = '';
+                                waveBg.classList.remove('thinking', 'reflecting');
                             }
+                        } 
+                        else if (data.token) {
+                            aiDiv.querySelector('div').innerHTML += data.token;
+                            chat.scrollTop = chat.scrollHeight;
                         }
                     }
                 }
-            } catch (error) {
-                console.error('Stream error:', error);
             }
+        } catch (error) {
+            console.error('Stream error:', error);
+            aiDiv.querySelector('div').innerHTML = '❌ Error connecting to AI';
         }
+    }
 
-        input.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
+    // Theme toggle
+    function toggleDayNight() {
+        const isDay = waveBg.classList.contains('day');
+        waveBg.classList.toggle('day', !isDay);
+        waveBg.classList.toggle('night', isDay);
+        console.log('🌊 Wave switched to', !isDay ? 'DAY' : 'NIGHT');
+    }
 
-        function newSession() { location.reload(); }
-        function clearChat() { chat.innerHTML = ''; }
-        function clearAll() { if (confirm('Clear all?')) chat.innerHTML = ''; }
+    // Sidebar functions
+    function newSession() {
+        location.reload();
+    }
 
-        window.onload = () => {
-            autoDetectTheme();
-            console.log('🌊 Wave background initialized');
-        };
-    </script>
-</body>
-</html>
+    function clearChat() {
+        chat.innerHTML = '';
+    }
+
+    async function clearAll() {
+        if (!confirm('Clear ALL conversations and memory?')) return;
+        
+        await fetch('/api/clear', { method: 'POST' });
+        chat.innerHTML = '';
+        loadSidebar();
+    }
+
+    async function loadSidebar() {
+        try {
+            // History
+            const histRes = await fetch('/api/history');
+            const hist = await histRes.json();
+            historyList.innerHTML = hist.sessions.length 
+                ? hist.sessions.map(s => 
+                    `<div class="px-4 py-2 hover:bg-gray-800 rounded-xl cursor-pointer text-sm">${s}</div>`
+                  ).join('')
+                : '<div class="px-4 py-2 text-gray-500 text-sm">No conversations yet</div>';
+
+            // Memory clips
+            const clipsRes = await fetch('/api/clips');
+            const clipsData = await clipsRes.json();
+            clipsList.innerHTML = clipsData.clips.length
+                ? clipsData.clips.map(c => 
+                    `<div class="bg-gray-800 p-3 rounded-2xl text-sm">${c}</div>`
+                  ).join('')
+                : '<div class="px-4 py-2 text-gray-500 text-sm">Memory empty</div>';
+        } catch (e) {
+            console.error('Sidebar load error:', e);
+        }
+    }
+
+    // Keyboard support
+    input.addEventListener('keypress', (e) => { 
+        if (e.key === 'Enter') sendMessage(); 
+    });
+
+    // Boot
+    window.onload = () => {
+        loadSidebar();
+        console.log('🌊 ClipperAI + LangGraph Agent Ready!');
+    };
+</script>
