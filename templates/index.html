@@ -26,10 +26,10 @@
             animation: fadeIn 0.3s ease;
         }
 
-        /* === CLEAN HOKUSAI ORBITING WAVE AGENTS (Grok-style) === */
+        /* === ULTRA-CLEAN HOKUSAI ORBITING WAVE AGENTS (Grok-style, ZERO ghosting) === */
         .orbit-container {
-            width: 180px;
-            height: 180px;
+            width: 190px;
+            height: 190px;
             position: relative;
             display: flex;
             align-items: center;
@@ -37,69 +37,75 @@
             margin: 0 auto;
         }
         @media (max-width: 640px) {
-            .orbit-container { width: 140px; height: 140px; }
+            .orbit-container { width: 150px; height: 150px; }
         }
 
         .center-core {
-            width: 68px;
-            height: 68px;
+            width: 72px;
+            height: 72px;
             background: radial-gradient(circle at 40% 40%, #ffffff, #00d4ff, #0a4d8f);
             border-radius: 50%;
-            box-shadow: 0 0 35px #00ffff, 0 0 70px rgba(255, 0, 170, 0.5), inset 0 0 20px rgba(255,255,255,0.9);
+            box-shadow: 0 0 40px #00ffff, 0 0 80px rgba(255, 0, 170, 0.6), inset 0 0 25px rgba(255,255,255,0.9);
             display: flex;
             align-items: center;
             justify-content: center;
             z-index: 10;
+            position: relative;
         }
-        .center-core svg { width: 42px; height: 42px; }
+        .center-core svg { width: 44px; height: 44px; }
 
         .wave-agent {
             position: absolute;
-            width: 42px;
-            height: 42px;
+            width: 44px;
+            height: 44px;
             display: flex;
             align-items: center;
             justify-content: center;
-            filter: drop-shadow(0 4px 10px currentColor);
+            filter: drop-shadow(0 6px 12px currentColor);
             animation: waveOrbit linear infinite;
             will-change: transform;
             backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            transform: translateZ(0);
+            -webkit-transform: translateZ(0);
         }
         .wave-agent svg {
             width: 100%;
             height: 100%;
-            animation: agentWave 4s ease-in-out infinite;
+            animation: agentWave 3.8s ease-in-out infinite;
         }
 
-        .agent-1 { --radius: 82px; animation-duration: 15s; color: #00f8ff; }
-        .agent-2 { --radius: 87px; animation-duration: 19s; color: #ff00cc; }
-        .agent-3 { --radius: 79px; animation-duration: 12s; color: #aaff44; }
-        .agent-4 { --radius: 91px; animation-duration: 17s; color: #ffaa33; }
-        .agent-5 { --radius: 81px; animation-duration: 14s; color: #00ffcc; }
-        .agent-6 { --radius: 89px; animation-duration: 20s; color: #cc88ff; }
-        .agent-7 { --radius: 84px; animation-duration: 13s; color: #ff4488; }
-        .agent-8 { --radius: 86px; animation-duration: 18s; color: #44ddff; }
+        /* 8 agents – slower, smoother, more visible waves */
+        .agent-1 { --radius: 84px; animation-duration: 14.5s; color: #00f8ff; }
+        .agent-2 { --radius: 89px; animation-duration: 18s; color: #ff00cc; }
+        .agent-3 { --radius: 80px; animation-duration: 11.5s; color: #aaff44; }
+        .agent-4 { --radius: 93px; animation-duration: 16.5s; color: #ffaa33; }
+        .agent-5 { --radius: 82px; animation-duration: 13.5s; color: #00ffcc; }
+        .agent-6 { --radius: 90px; animation-duration: 19.5s; color: #cc88ff; }
+        .agent-7 { --radius: 85px; animation-duration: 12.8s; color: #ff4488; }
+        .agent-8 { --radius: 87px; animation-duration: 17.5s; color: #44ddff; }
 
         @keyframes waveOrbit {
-            from   { transform: translate3d(0,0,0) rotate(0deg) translateX(var(--radius)) rotate(0deg) translateY(0); }
-            25%    { transform: translate3d(0,0,0) rotate(90deg) translateX(var(--radius)) rotate(-90deg) translateY(-11px); }
+            from   { transform: translate3d(0,0,0) rotate(0deg)   translateX(var(--radius)) rotate(0deg)   translateY(0); }
+            25%    { transform: translate3d(0,0,0) rotate(90deg)  translateX(var(--radius)) rotate(-90deg)  translateY(-12px); }
             50%    { transform: translate3d(0,0,0) rotate(180deg) translateX(var(--radius)) rotate(-180deg) translateY(0); }
-            75%    { transform: translate3d(0,0,0) rotate(270deg) translateX(var(--radius)) rotate(-270deg) translateY(11px); }
+            75%    { transform: translate3d(0,0,0) rotate(270deg) translateX(var(--radius)) rotate(-270deg) translateY(12px); }
             to     { transform: translate3d(0,0,0) rotate(360deg) translateX(var(--radius)) rotate(-360deg) translateY(0); }
         }
+
         @keyframes agentWave {
             0%, 100% { transform: rotate(0deg) scale(1); }
-            50%      { transform: rotate(15deg) scale(1.07); }
+            50%      { transform: rotate(18deg) scale(1.09); }
         }
 
         .thinking-text {
-            margin-top: 16px;
+            margin-top: 18px;
             font-size: clamp(15px, 3.5vw, 18px);
             font-weight: 500;
             letter-spacing: 1.8px;
             color: #00e0ff;
-            text-shadow: 0 0 15px rgba(0, 224, 255, 0.8);
-            animation: pulseText 2.8s ease-in-out infinite;
+            text-shadow: 0 0 18px rgba(0, 224, 255, 0.9);
+            animation: pulseText 2.6s ease-in-out infinite;
         }
         @keyframes pulseText {
             0%, 100% { opacity: 0.8; }
@@ -165,7 +171,7 @@
         </div>
     </div>
 
-    <!-- THINKING SPINNER TEMPLATE -->
+    <!-- THINKING SPINNER TEMPLATE (Grok-style orbiting Hokusai waves) -->
     <div id="thinking-template" class="hidden">
         <div class="orbit-container">
             <div class="center-core">
@@ -174,7 +180,8 @@
                     <path d="M25 65 Q40 50 55 71 Q72 48 80 66" fill="none" stroke="#ffffff" stroke-width="9" stroke-linecap="round"/>
                 </svg>
             </div>
-            <!-- 8 wave agents -->
+
+            <!-- 8 Hokusai wave agents (highly visible, no ghosting) -->
             <div class="wave-agent agent-1" style="top:50%; left:50%; transform:translate(-50%,-50%);"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M20 68 Q35 48 50 70 Q68 45 82 68" fill="none" stroke="currentColor" stroke-width="17" stroke-linecap="round"/><circle cx="50" cy="47" r="13" fill="#111"/><circle cx="45" cy="44" r="3.5" fill="#fff"/><circle cx="56" cy="44" r="3.5" fill="#fff"/><path d="M43 57 Q50 62 58 56" fill="none" stroke="#fff" stroke-width="2.5"/></svg></div>
             <div class="wave-agent agent-2" style="top:50%; left:50%; transform:translate(-50%,-50%);"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M18 72 Q37 42 53 69 Q71 47 80 71" fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round"/><circle cx="50" cy="48" r="12" fill="#111"/><circle cx="44" cy="45" r="3" fill="#fff"/><circle cx="56" cy="45" r="3" fill="#fff"/><circle cx="51" cy="56" r="4" fill="#ff3366"/></svg></div>
             <div class="wave-agent agent-3" style="top:50%; left:50%; transform:translate(-50%,-50%);"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M22 65 Q40 50 54 71 Q70 48 79 66" fill="none" stroke="currentColor" stroke-width="17" stroke-linecap="round"/><circle cx="50" cy="49" r="12" fill="#111"/><circle cx="45" cy="46" r="3" fill="#fff"/><circle cx="55" cy="46" r="3" fill="#fff"/><path d="M44 57 Q50 53 57 57" fill="none" stroke="#ffdd44" stroke-width="3"/></svg></div>
@@ -216,11 +223,9 @@
         addMessage(message, 'user');
         input.value = '';
 
-        // Create AI message container
         currentAiDiv = addMessage('', 'ai');
         currentBubble = currentAiDiv.querySelector('.chat-bubble-ai');
 
-        // Show Hokusai spinner (Grok-style)
         const template = document.getElementById('thinking-template').cloneNode(true);
         template.classList.remove('hidden');
         currentBubble.innerHTML = '';
@@ -256,10 +261,8 @@
 
                     const data = JSON.parse(dataStr);
 
-                    // === TOKEN STREAMING (this is the part that was broken) ===
                     if (data.token) {
                         if (!isStreaming) {
-                            // First token arrived → remove spinner and start real text
                             isStreaming = true;
                             currentBubble.innerHTML = `<div class="chat-bubble-ai px-5 py-4">${renderStreaming(fullText)}</div>`;
                         }
@@ -270,9 +273,7 @@
                 }
             }
         } catch (error) {
-            if (currentBubble) {
-                currentBubble.innerHTML = `<div class="chat-bubble-ai px-5 py-4 text-red-400">❌ ${error.message}</div>`;
-            }
+            if (currentBubble) currentBubble.innerHTML = `<div class="chat-bubble-ai px-5 py-4 text-red-400">❌ ${error.message}</div>`;
         }
     }
 
@@ -318,7 +319,7 @@
 
     window.onload = () => {
         loadSidebar();
-        console.log('🌊 toriilabs — Grok-style async streaming + Hokusai agents ready');
+        console.log('🌊 toriilabs — Grok-style async streaming + fixed Hokusai orbiting waves ready');
     };
     </script>
 </body>
