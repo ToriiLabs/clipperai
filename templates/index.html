@@ -26,90 +26,38 @@
             animation: fadeIn 0.3s ease;
         }
 
-        /* === ULTRA-CLEAN HOKUSAI ORBITING WAVE AGENTS (Grok-style, ZERO ghosting) === */
-        .orbit-container {
-            width: 190px;
-            height: 190px;
-            position: relative;
+        /* === GROK-STYLE AGENTS THINKING (Hokusai wave version) === */
+        .agents-thinking {
             display: flex;
             align-items: center;
+            gap: 12px;
+            padding: 16px 0;
             justify-content: center;
-            margin: 0 auto;
-        }
-        @media (max-width: 640px) {
-            .orbit-container { width: 150px; height: 150px; }
         }
 
-        .center-core {
-            width: 72px;
-            height: 72px;
-            background: radial-gradient(circle at 40% 40%, #ffffff, #00d4ff, #0a4d8f);
-            border-radius: 50%;
-            box-shadow: 0 0 40px #00ffff, 0 0 80px rgba(255, 0, 170, 0.6), inset 0 0 25px rgba(255,255,255,0.9);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 10;
-            position: relative;
+        .agent {
+            width: 42px;
+            height: 42px;
+            animation: agentFloat 1.8s ease-in-out infinite;
+            filter: drop-shadow(0 4px 8px currentColor);
         }
-        .center-core svg { width: 44px; height: 44px; }
 
-        .wave-agent {
-            position: absolute;
-            width: 44px;
-            height: 44px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            filter: drop-shadow(0 6px 12px currentColor);
-            animation: waveOrbit linear infinite;
-            will-change: transform;
-            backface-visibility: hidden;
-            -webkit-backface-visibility: hidden;
-            transform: translateZ(0);
-            -webkit-transform: translateZ(0);
-        }
-        .wave-agent svg {
+        .agent svg {
             width: 100%;
             height: 100%;
-            animation: agentWave 3.8s ease-in-out infinite;
         }
 
-        /* 8 agents – slower, smoother, more visible waves */
-        .agent-1 { --radius: 84px; animation-duration: 14.5s; color: #00f8ff; }
-        .agent-2 { --radius: 89px; animation-duration: 18s; color: #ff00cc; }
-        .agent-3 { --radius: 80px; animation-duration: 11.5s; color: #aaff44; }
-        .agent-4 { --radius: 93px; animation-duration: 16.5s; color: #ffaa33; }
-        .agent-5 { --radius: 82px; animation-duration: 13.5s; color: #00ffcc; }
-        .agent-6 { --radius: 90px; animation-duration: 19.5s; color: #cc88ff; }
-        .agent-7 { --radius: 85px; animation-duration: 12.8s; color: #ff4488; }
-        .agent-8 { --radius: 87px; animation-duration: 17.5s; color: #44ddff; }
-
-        @keyframes waveOrbit {
-            from   { transform: translate3d(0,0,0) rotate(0deg)   translateX(var(--radius)) rotate(0deg)   translateY(0); }
-            25%    { transform: translate3d(0,0,0) rotate(90deg)  translateX(var(--radius)) rotate(-90deg)  translateY(-12px); }
-            50%    { transform: translate3d(0,0,0) rotate(180deg) translateX(var(--radius)) rotate(-180deg) translateY(0); }
-            75%    { transform: translate3d(0,0,0) rotate(270deg) translateX(var(--radius)) rotate(-270deg) translateY(12px); }
-            to     { transform: translate3d(0,0,0) rotate(360deg) translateX(var(--radius)) rotate(-360deg) translateY(0); }
+        @keyframes agentFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
         }
 
-        @keyframes agentWave {
-            0%, 100% { transform: rotate(0deg) scale(1); }
-            50%      { transform: rotate(18deg) scale(1.09); }
-        }
-
-        .thinking-text {
-            margin-top: 18px;
-            font-size: clamp(15px, 3.5vw, 18px);
-            font-weight: 500;
-            letter-spacing: 1.8px;
+        .thinking-label {
+            font-size: 15px;
+            font-weight: 600;
+            letter-spacing: 1px;
             color: #00e0ff;
-            text-shadow: 0 0 18px rgba(0, 224, 255, 0.9);
-            animation: pulseText 2.6s ease-in-out infinite;
-        }
-        @keyframes pulseText {
-            0%, 100% { opacity: 0.8; }
-            50%      { opacity: 1; }
+            text-shadow: 0 0 12px rgba(0, 224, 255, 0.8);
         }
 
         @keyframes fadeIn {
@@ -171,27 +119,17 @@
         </div>
     </div>
 
-    <!-- THINKING SPINNER TEMPLATE (Grok-style orbiting Hokusai waves) -->
+    <!-- GROK-STYLE THINKING TEMPLATE (exactly like your screenshot + Hokusai waves) -->
     <div id="thinking-template" class="hidden">
-        <div class="orbit-container">
-            <div class="center-core">
-                <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M20 68 Q35 48 50 70 Q68 45 82 68" fill="none" stroke="#0a4d8f" stroke-width="18" stroke-linecap="round"/>
-                    <path d="M25 65 Q40 50 55 71 Q72 48 80 66" fill="none" stroke="#ffffff" stroke-width="9" stroke-linecap="round"/>
-                </svg>
-            </div>
-
-            <!-- 8 Hokusai wave agents (highly visible, no ghosting) -->
-            <div class="wave-agent agent-1" style="top:50%; left:50%; transform:translate(-50%,-50%);"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M20 68 Q35 48 50 70 Q68 45 82 68" fill="none" stroke="currentColor" stroke-width="17" stroke-linecap="round"/><circle cx="50" cy="47" r="13" fill="#111"/><circle cx="45" cy="44" r="3.5" fill="#fff"/><circle cx="56" cy="44" r="3.5" fill="#fff"/><path d="M43 57 Q50 62 58 56" fill="none" stroke="#fff" stroke-width="2.5"/></svg></div>
-            <div class="wave-agent agent-2" style="top:50%; left:50%; transform:translate(-50%,-50%);"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M18 72 Q37 42 53 69 Q71 47 80 71" fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round"/><circle cx="50" cy="48" r="12" fill="#111"/><circle cx="44" cy="45" r="3" fill="#fff"/><circle cx="56" cy="45" r="3" fill="#fff"/><circle cx="51" cy="56" r="4" fill="#ff3366"/></svg></div>
-            <div class="wave-agent agent-3" style="top:50%; left:50%; transform:translate(-50%,-50%);"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M22 65 Q40 50 54 71 Q70 48 79 66" fill="none" stroke="currentColor" stroke-width="17" stroke-linecap="round"/><circle cx="50" cy="49" r="12" fill="#111"/><circle cx="45" cy="46" r="3" fill="#fff"/><circle cx="55" cy="46" r="3" fill="#fff"/><path d="M44 57 Q50 53 57 57" fill="none" stroke="#ffdd44" stroke-width="3"/></svg></div>
-            <div class="wave-agent agent-4" style="top:50%; left:50%; transform:translate(-50%,-50%);"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M19 70 Q36 45 52 68 Q69 50 81 69" fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round"/><circle cx="50" cy="47" r="13" fill="#111"/><circle cx="45" cy="44" r="3.5" fill="#fff"/><circle cx="56" cy="44" r="3.5" fill="#fff"/><path d="M42 56 Q50 61 57 55" fill="none" stroke="#fff" stroke-width="2"/></svg></div>
-            <div class="wave-agent agent-5" style="top:50%; left:50%; transform:translate(-50%,-50%);"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M21 67 Q39 47 53 70 Q72 44 80 68" fill="none" stroke="currentColor" stroke-width="17" stroke-linecap="round"/><circle cx="50" cy="48" r="12" fill="#111"/><circle cx="44" cy="45" r="3" fill="#fff"/><circle cx="56" cy="45" r="3" fill="#fff"/></svg></div>
-            <div class="wave-agent agent-6" style="top:50%; left:50%; transform:translate(-50%,-50%);"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M20 71 Q34 50 51 69 Q67 46 83 70" fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round"/><circle cx="50" cy="47" r="13" fill="#111"/><circle cx="45" cy="44" r="3.5" fill="#fff"/><circle cx="56" cy="44" r="3.5" fill="#fff"/><circle cx="50" cy="56" r="3.5" fill="#ff88cc"/></svg></div>
-            <div class="wave-agent agent-7" style="top:50%; left:50%; transform:translate(-50%,-50%);"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M23 66 Q38 48 54 70 Q71 45 79 67" fill="none" stroke="currentColor" stroke-width="17" stroke-linecap="round"/><circle cx="50" cy="49" r="12" fill="#111"/><circle cx="45" cy="46" r="3" fill="#fff"/><circle cx="55" cy="46" r="3" fill="#fff"/></svg></div>
-            <div class="wave-agent agent-8" style="top:50%; left:50%; transform:translate(-50%,-50%);"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M18 69 Q35 46 50 71 Q66 49 82 68" fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round"/><circle cx="50" cy="47" r="13" fill="#111"/><circle cx="45" cy="44" r="3.5" fill="#fff"/><circle cx="55" cy="44" r="3.5" fill="#fff"/></svg></div>
+        <div class="agents-thinking">
+            <!-- 4 colorful Hokusai wave agents (Grok-style) -->
+            <div class="agent" style="color:#00f8ff"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M22 68 Q38 46 52 70 Q70 45 80 68" fill="none" stroke="currentColor" stroke-width="18" stroke-linecap="round"/><circle cx="50" cy="47" r="13" fill="#111"/><circle cx="44" cy="44" r="3.5" fill="#fff"/><circle cx="56" cy="44" r="3.5" fill="#fff"/><path d="M43 57 Q50 61 57 56" fill="none" stroke="#fff" stroke-width="3"/></svg></div>
+            <div class="agent" style="color:#ff00cc"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M20 71 Q36 47 53 69 Q71 48 81 70" fill="none" stroke="currentColor" stroke-width="17" stroke-linecap="round"/><circle cx="50" cy="48" r="13" fill="#111"/><circle cx="45" cy="45" r="3.5" fill="#fff"/><circle cx="55" cy="45" r="3.5" fill="#fff"/><circle cx="50" cy="56" r="4" fill="#ff3366"/></svg></div>
+            <div class="agent" style="color:#aaff44"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M19 67 Q37 49 54 71 Q70 46 80 67" fill="none" stroke="currentColor" stroke-width="18" stroke-linecap="round"/><circle cx="50" cy="49" r="12" fill="#111"/><circle cx="45" cy="46" r="3" fill="#fff"/><circle cx="55" cy="46" r="3" fill="#fff"/><path d="M43 57 Q50 53 57 57" fill="none" stroke="#ffdd44" stroke-width="3"/></svg></div>
+            <div class="agent" style="color:#ffaa33"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M21 69 Q35 48 50 70 Q68 45 82 68" fill="none" stroke="currentColor" stroke-width="17" stroke-linecap="round"/><circle cx="50" cy="47" r="13" fill="#111"/><circle cx="44" cy="44" r="3.5" fill="#fff"/><circle cx="56" cy="44" r="3.5" fill="#fff"/><path d="M42 56 Q50 61 57 55" fill="none" stroke="#fff" stroke-width="2"/></svg></div>
+            
+            <div class="thinking-label">Agents thinking</div>
         </div>
-        <div class="thinking-text">🌊 Torii is thinking... 🌊</div>
     </div>
 
     <script>
@@ -226,6 +164,7 @@
         currentAiDiv = addMessage('', 'ai');
         currentBubble = currentAiDiv.querySelector('.chat-bubble-ai');
 
+        // Show Grok-style Hokusai Agents thinking
         const template = document.getElementById('thinking-template').cloneNode(true);
         template.classList.remove('hidden');
         currentBubble.innerHTML = '';
@@ -319,7 +258,7 @@
 
     window.onload = () => {
         loadSidebar();
-        console.log('🌊 toriilabs — Grok-style async streaming + fixed Hokusai orbiting waves ready');
+        console.log('🌊 toriilabs — Grok-style Agents thinking with Hokusai waves ready');
     };
     </script>
 </body>
