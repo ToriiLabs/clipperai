@@ -10,21 +10,10 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
         body { font-family: 'Inter', system-ui, sans-serif; }
         
-        .chat-bubble-user { 
-            background: #3b82f6; 
-            color: white; 
-            border-radius: 20px 20px 4px 20px; 
-        }
-        .chat-bubble-ai { 
-            background: #1f2937; 
-            border-radius: 20px 20px 20px 4px; 
-        }
-        .message { 
-            max-width: 80%; 
-            animation: fadeIn 0.3s ease; 
-        }
+        .chat-bubble-user { background: #3b82f6; color: white; border-radius: 20px 20px 4px 20px; }
+        .chat-bubble-ai { background: #1f2937; border-radius: 20px 20px 20px 4px; }
+        .message { max-width: 80%; animation: fadeIn 0.3s ease; }
 
-        /* HOKUSAI WAVE BACKGROUND */
         #wave-bg {
             position: fixed;
             inset: 0;
@@ -35,19 +24,11 @@
             background: #0f172a;
         }
         #wave-bg svg { animation: waveDrift 8s linear infinite; }
-        @keyframes waveDrift { 
-            0% { transform: translateX(0); } 
-            100% { transform: translateX(-300px); } 
-        }
+        @keyframes waveDrift { 0% { transform: translateX(0); } 100% { transform: translateX(-300px); } }
 
-        /* NIGHT / DAY / THINKING COLORS */
         #wave-bg.night svg path:nth-child(1) { stroke: #1e2937 !important; }
         #wave-bg.night svg path:nth-child(2) { stroke: #334155 !important; }
         #wave-bg.night svg path:nth-child(3) { stroke: #60a5fa !important; }
-
-        #wave-bg.day svg path:nth-child(1) { stroke: #0ea5e9 !important; }
-        #wave-bg.day svg path:nth-child(2) { stroke: #22d3ee !important; }
-        #wave-bg.day svg path:nth-child(3) { stroke: #a5f3fc !important; }
 
         #wave-bg.thinking svg path:nth-child(1) { stroke: #0ea5e9 !important; }
         #wave-bg.thinking svg path:nth-child(2) { stroke: #3b82f6 !important; }
@@ -59,43 +40,23 @@
 
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* GROK-STYLE THINKING ANIMATION */
-        .thinking-container {
-            text-align: center;
-            padding: 20px 0;
-        }
+        /* Grok-style thinking animation */
+        .thinking-container { text-align: center; padding: 20px 0; }
         .wave-circle {
-            width: 90px;
-            height: 90px;
-            margin: 0 auto 12px;
-            position: relative;
-            animation: spin 8s linear infinite;
+            width: 90px; height: 90px; margin: 0 auto 12px;
+            position: relative; animation: spin 8s linear infinite;
         }
         .wave-ring {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            border: 4px solid transparent;
-            border-top-color: #3b82f6;
-            border-radius: 50%;
-            animation: spin 1.5s linear infinite;
+            position: absolute; width: 100%; height: 100%;
+            border: 4px solid transparent; border-top-color: #3b82f6;
+            border-radius: 50%; animation: spin 1.5s linear infinite;
         }
         .wave-ring.delay-1 { border-top-color: #22d3ee; animation-delay: 300ms; }
         .wave-ring.delay-2 { border-top-color: #a5f3fc; animation-delay: 600ms; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        .thinking-text {
-            font-weight: 600;
-            color: #60a5fa;
-            margin-bottom: 12px;
-        }
-        .status-line {
-            font-size: 0.9rem;
-            color: #64748b;
-            margin: 4px 0;
-            opacity: 0;
-            animation: fadeInStatus 0.6s forwards;
-        }
+        .thinking-text { font-weight: 600; color: #60a5fa; margin-bottom: 12px; }
+        .status-line { font-size: 0.9rem; color: #64748b; margin: 4px 0; opacity: 0; animation: fadeInStatus 0.6s forwards; }
         #status2 { animation-delay: 800ms; }
         #status3 { animation-delay: 1600ms; }
         @keyframes fadeInStatus { to { opacity: 1; } }
@@ -130,11 +91,11 @@
         </div>
     </div>
 
-    <!-- MAIN CHAT AREA -->
+    <!-- MAIN CHAT -->
     <div class="flex-1 flex flex-col relative z-10">
         <div class="h-14 border-b border-gray-800 flex items-center px-6 justify-between bg-gray-900">
             <span id="session-title" class="font-semibold text-lg">New Conversation</span>
-            <button onclick="toggleDayNight()" id="theme-toggle" class="flex items-center gap-2 text-gray-400 hover:text-white text-xl">
+            <button onclick="toggleDayNight()" class="flex items-center gap-2 text-gray-400 hover:text-white text-xl">
                 <i class="fa-solid fa-sun"></i>
             </button>
             <button onclick="clearChat()" class="flex items-center gap-2 text-gray-400 hover:text-white">
@@ -183,24 +144,20 @@
                             <div class="wave-ring delay-2"></div>
                         </div>
                         <div class="thinking-text">Clipper is thinking...</div>
-                        <div class="status-line" id="status1">Analyzing memory clips</div>
-                        <div class="status-line" id="status2">Running reflection pass</div>
-                        <div class="status-line" id="status3">Polishing final answer</div>
+                        <div class="status-line">Analyzing memory clips</div>
+                        <div class="status-line" style="animation-delay:800ms">Running reflection pass</div>
+                        <div class="status-line" style="animation-delay:1600ms">Polishing final answer</div>
                     </div>`;
                 waveBg.classList.add('thinking');
-            } 
-            else if (phase === 'reflecting') {
+            } else if (phase === 'reflecting') {
                 aiDiv.innerHTML = `
                     <div class="thinking-container">
-                        <div class="wave-circle reflecting">
-                            <div class="wave-ring"></div>
-                        </div>
+                        <div class="wave-circle reflecting"><div class="wave-ring"></div></div>
                         <div class="thinking-text">Reflecting & polishing...</div>
                     </div>`;
                 waveBg.classList.remove('thinking');
                 waveBg.classList.add('reflecting');
-            } 
-            else if (phase === 'final') {
+            } else if (phase === 'final') {
                 aiDiv.innerHTML = '';
                 waveBg.classList.remove('thinking', 'reflecting');
             }
@@ -215,12 +172,19 @@
 
             const aiDiv = addMessage('<span class="text-gray-400">Thinking...</span>', 'ai');
 
+            // 120 second timeout to prevent "time outs"
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 120000);
+
             try {
                 const response = await fetch('/api/stream', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message })
+                    body: JSON.stringify({ message }),
+                    signal: controller.signal
                 });
+
+                clearTimeout(timeoutId);
 
                 if (!response.ok) throw new Error(`Server error ${response.status}`);
 
@@ -241,14 +205,11 @@
                         if (line.startsWith('data: ')) {
                             const jsonStr = line.slice(6).trim();
                             if (!jsonStr) continue;
-
                             try {
                                 const data = JSON.parse(jsonStr);
-
                                 if (data.phase) {
                                     showThinkingUI(aiDiv, data.phase);
-                                } 
-                                else if (data.token) {
+                                } else if (data.token) {
                                     finalText += data.token;
                                     if (aiDiv.querySelector('.thinking-container')) {
                                         aiDiv.innerHTML = `<div class="prose">${finalText}</div>`;
@@ -262,8 +223,13 @@
                     }
                 }
             } catch (error) {
+                clearTimeout(timeoutId);
                 console.error('Stream error:', error);
-                aiDiv.innerHTML = '❌ Error connecting to AI';
+                if (error.name === 'AbortError') {
+                    aiDiv.innerHTML = '❌ Request timed out (took too long)';
+                } else {
+                    aiDiv.innerHTML = '❌ Error connecting to AI';
+                }
             }
         }
 
@@ -307,7 +273,7 @@
 
         window.onload = () => {
             loadSidebar();
-            console.log('🌊 ClipperAI + Grok-style Wave Agents Ready!');
+            console.log('🌊 ClipperAI ready with 120s timeout');
         };
     </script>
 </body>
