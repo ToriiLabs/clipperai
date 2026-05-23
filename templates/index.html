@@ -15,7 +15,6 @@
 
         .message { max-width: 80%; animation: fadeIn 0.3s ease; }
 
-        /* Light background by default (Grok style) */
         body { background-color: #f8f9fa; }
         .dark body { background-color: #0f172a; }
 
@@ -29,7 +28,7 @@
             overflow: hidden;
         }
 
-        /* EVEN SMALLER Thinking Animation */
+        /* HIGH PERFORMANCE Thinking Animation */
         .thinking-container { 
             text-align: center; 
             padding: 12px 0; 
@@ -39,7 +38,8 @@
             height: 36px;
             margin: 0 auto 8px;
             position: relative;
-            animation: spin 5.5s linear infinite;
+            will-change: transform;
+            transform: translateZ(0);           /* Force GPU acceleration */
         }
         .wave-ring {
             position: absolute;
@@ -49,11 +49,16 @@
             border-top-color: #3b82f6;
             border-radius: 50%;
             animation: spin 1.2s linear infinite;
+            will-change: transform;
+            backface-visibility: hidden;
+            transform: translateZ(0);
         }
         .wave-ring.delay-1 { border-top-color: #22d3ee; animation-delay: 180ms; }
         .wave-ring.delay-2 { border-top-color: #a5f3fc; animation-delay: 420ms; }
 
-        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes spin { 
+            to { transform: rotate(360deg); } 
+        }
 
         .thinking-text {
             font-weight: 600;
@@ -76,7 +81,7 @@
         </svg>
     </div>
 
-    <!-- SIDEBAR -->
+    <!-- SIDEBAR + CHAT (same as before) -->
     <div class="w-80 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col relative z-10">
         <div class="p-4 border-b border-gray-200 dark:border-gray-800 flex items-center gap-3">
             <h1 class="text-2xl font-semibold tracking-tight text-gray-900 dark:text-white">ClipperAI</h1>
@@ -94,7 +99,6 @@
         </div>
     </div>
 
-    <!-- MAIN CHAT -->
     <div class="flex-1 flex flex-col relative z-10">
         <div class="h-14 border-b border-gray-200 dark:border-gray-800 flex items-center px-6 justify-between bg-white dark:bg-gray-900">
             <span id="session-title" class="font-semibold text-lg text-gray-900 dark:text-white">New Conversation</span>
@@ -237,7 +241,7 @@
         });
 
         window.onload = () => {
-            console.log('🌊 ClipperAI — very small wave thinking ready');
+            console.log('🌊 ClipperAI — optimized performance thinking animation');
         };
     </script>
 </body>
