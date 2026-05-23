@@ -40,7 +40,7 @@
 
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* Grok-style thinking animation */
+        /* Thinking Animation */
         .thinking-container { text-align: center; padding: 20px 0; }
         .wave-circle {
             width: 90px; height: 90px; margin: 0 auto 12px;
@@ -56,10 +56,6 @@
         @keyframes spin { to { transform: rotate(360deg); } }
 
         .thinking-text { font-weight: 600; color: #60a5fa; margin-bottom: 12px; }
-        .status-line { font-size: 0.9rem; color: #64748b; margin: 4px 0; opacity: 0; animation: fadeInStatus 0.6s forwards; }
-        #status2 { animation-delay: 800ms; }
-        #status3 { animation-delay: 1600ms; }
-        @keyframes fadeInStatus { to { opacity: 1; } }
     </style>
 </head>
 <body class="bg-gray-950 text-gray-100 flex h-screen overflow-hidden">
@@ -122,8 +118,6 @@
         const chat = document.getElementById('chat');
         const input = document.getElementById('input');
         const waveBg = document.getElementById('wave-bg');
-        const historyList = document.getElementById('history-list');
-        const clipsList = document.getElementById('clips-list');
 
         function addMessage(text, type) {
             const div = document.createElement('div');
@@ -144,21 +138,20 @@
                             <div class="wave-ring delay-2"></div>
                         </div>
                         <div class="thinking-text">Clipper is thinking...</div>
-                        <div class="status-line">Analyzing memory clips</div>
-                        <div class="status-line" style="animation-delay:800ms">Running reflection pass</div>
-                        <div class="status-line" style="animation-delay:1600ms">Polishing final answer</div>
                     </div>`;
                 waveBg.classList.add('thinking');
             } else if (phase === 'reflecting') {
                 aiDiv.innerHTML = `
                     <div class="thinking-container">
-                        <div class="wave-circle reflecting"><div class="wave-ring"></div></div>
+                        <div class="wave-circle">
+                            <div class="wave-ring"></div>
+                        </div>
                         <div class="thinking-text">Reflecting & polishing...</div>
                     </div>`;
                 waveBg.classList.remove('thinking');
                 waveBg.classList.add('reflecting');
             } else if (phase === 'final') {
-                aiDiv.innerHTML = '';
+                aiDiv.innerHTML = `<div class="prose text-gray-100"></div>`;
                 waveBg.classList.remove('thinking', 'reflecting');
             }
         }
@@ -172,19 +165,12 @@
 
             const aiDiv = addMessage('<span class="text-gray-400">Thinking...</span>', 'ai');
 
-            // 120 second timeout to prevent "time outs"
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 120000);
-
             try {
                 const response = await fetch('/api/stream', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message }),
-                    signal: controller.signal
+                    body: JSON.stringify({ message })
                 });
-
-                clearTimeout(timeoutId);
 
                 if (!response.ok) throw new Error(`Server error ${response.status}`);
 
@@ -205,31 +191,32 @@
                         if (line.startsWith('data: ')) {
                             const jsonStr = line.slice(6).trim();
                             if (!jsonStr) continue;
+
                             try {
                                 const data = JSON.parse(jsonStr);
+
                                 if (data.phase) {
+                                    console.log('Phase received:', data.phase);
                                     showThinkingUI(aiDiv, data.phase);
-                                } else if (data.token) {
+                                } 
+                                else if (data.token) {
                                     finalText += data.token;
-                                    if (aiDiv.querySelector('.thinking-container')) {
-                                        aiDiv.innerHTML = `<div class="prose">${finalText}</div>`;
-                                    } else {
-                                        aiDiv.querySelector('div').innerHTML = finalText;
+                                    // Update the final text container
+                                    const textContainer = aiDiv.querySelector('.prose');
+                                    if (textContainer) {
+                                        textContainer.textContent = finalText;
                                     }
                                     chat.scrollTop = chat.scrollHeight;
                                 }
-                            } catch (e) {}
+                            } catch (e) {
+                                console.warn('JSON parse error:', e);
+                            }
                         }
                     }
                 }
             } catch (error) {
-                clearTimeout(timeoutId);
                 console.error('Stream error:', error);
-                if (error.name === 'AbortError') {
-                    aiDiv.innerHTML = '❌ Request timed out (took too long)';
-                } else {
-                    aiDiv.innerHTML = '❌ Error connecting to AI';
-                }
+                aiDiv.innerHTML = '❌ Error connecting to AI';
             }
         }
 
@@ -246,25 +233,6 @@
             if (!confirm('Clear ALL conversations and memory?')) return;
             await fetch('/api/clear', { method: 'POST' });
             chat.innerHTML = '';
-            loadSidebar();
-        }
-
-        async function loadSidebar() {
-            try {
-                const histRes = await fetch('/api/history');
-                const hist = await histRes.json();
-                historyList.innerHTML = hist.sessions.length 
-                    ? hist.sessions.map(s => `<div class="px-4 py-2 hover:bg-gray-800 rounded-xl cursor-pointer text-sm">${s}</div>`).join('')
-                    : '<div class="px-4 py-2 text-gray-500 text-sm">No conversations yet</div>';
-
-                const clipsRes = await fetch('/api/clips');
-                const clipsData = await clipsRes.json();
-                clipsList.innerHTML = clipsData.clips.length
-                    ? clipsData.clips.map(c => `<div class="bg-gray-800 p-3 rounded-2xl text-sm">${c}</div>`).join('')
-                    : '<div class="px-4 py-2 text-gray-500 text-sm">Memory empty</div>';
-            } catch (e) {
-                console.error('Sidebar load error:', e);
-            }
         }
 
         input.addEventListener('keypress', (e) => { 
@@ -272,8 +240,7 @@
         });
 
         window.onload = () => {
-            loadSidebar();
-            console.log('🌊 ClipperAI ready with 120s timeout');
+            console.log('🌊 ClipperAI frontend loaded - streaming should now work');
         };
     </script>
 </body>
