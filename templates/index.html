@@ -27,39 +27,45 @@
             overflow: hidden;
         }
 
-        /* GROK-STYLE THINKING ANIMATION */
+        /* === GROK-STYLE AGENTS THINKING (Advanced CSS) === */
         .thinking-container {
             text-align: center;
-            padding: 24px 0;
+            padding: 28px 0 20px;
         }
+
         .agents-thinking {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-            margin-bottom: 8px;
+            gap: 7px;
+            margin-bottom: 10px;
         }
+
         .dot {
-            width: 10px;
-            height: 10px;
+            width: 11px;
+            height: 11px;
             background: #3b82f6;
             border-radius: 50%;
-            animation: pulse 1.4s infinite ease-in-out;
+            animation: grokPulse 1.4s infinite ease-in-out;
+            will-change: transform, opacity;
+            transform: translateZ(0);
         }
-        .dot:nth-child(2) { animation-delay: 150ms; background: #22d3ee; }
-        .dot:nth-child(3) { animation-delay: 300ms; background: #a5f3fc; }
-        .dot:nth-child(4) { animation-delay: 450ms; background: #3b82f6; }
-        .dot:nth-child(5) { animation-delay: 600ms; background: #22d3ee; }
 
-        @keyframes pulse {
-            0%, 100% { transform: scale(0.4); opacity: 0.4; }
-            50% { transform: scale(1); opacity: 1; }
+        .dot:nth-child(2) { animation-delay: 120ms; background: #22d3ee; }
+        .dot:nth-child(3) { animation-delay: 240ms; background: #a5f3fc; }
+        .dot:nth-child(4) { animation-delay: 360ms; background: #3b82f6; }
+        .dot:nth-child(5) { animation-delay: 480ms; background: #22d3ee; }
+
+        @keyframes grokPulse {
+            0%, 100% { transform: scale(0.4); opacity: 0.3; }
+            50%      { transform: scale(1.15); opacity: 1; }
         }
 
         .thinking-text {
             font-weight: 600;
             font-size: 0.95rem;
             color: #3b82f6;
+            letter-spacing: 0.5px;
         }
         .dark .thinking-text { color: #60a5fa; }
 
@@ -68,7 +74,7 @@
 </head>
 <body class="flex h-screen overflow-hidden">
 
-    <!-- HOKUSAI WAVE -->
+    <!-- Wave Background -->
     <div id="wave-bg" class="night">
         <svg width="100%" height="100%" viewBox="0 0 1440 900" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M0 620 Q360 420 720 580 Q1080 720 1440 540 L1440 900 L0 900 Z" fill="none" stroke="#0f172a" stroke-width="120" stroke-opacity="0.6"/>
@@ -77,7 +83,7 @@
         </svg>
     </div>
 
-    <!-- SIDEBAR -->
+    <!-- Sidebar + Chat (unchanged layout) -->
     <div class="w-80 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col relative z-10">
         <div class="p-4 border-b border-gray-200 dark:border-gray-800 flex items-center gap-3">
             <h1 class="text-2xl font-semibold tracking-tight text-gray-900 dark:text-white">ClipperAI</h1>
@@ -95,7 +101,6 @@
         </div>
     </div>
 
-    <!-- MAIN CHAT -->
     <div class="flex-1 flex flex-col relative z-10">
         <div class="h-14 border-b border-gray-200 dark:border-gray-800 flex items-center px-6 justify-between bg-white dark:bg-gray-900">
             <span id="session-title" class="font-semibold text-lg text-gray-900 dark:text-white">New Conversation</span>
@@ -122,6 +127,7 @@
     </div>
 
     <script>
+        // (Same script as before - only the thinking UI part is updated)
         const chat = document.getElementById('chat');
         const input = document.getElementById('input');
         const waveBg = document.getElementById('wave-bg');
@@ -167,6 +173,7 @@
             }
         }
 
+        // Rest of your sendMessage, toggleDayNight, etc. functions remain the same
         async function sendMessage() {
             const message = input.value.trim();
             if (!message) return;
@@ -242,7 +249,7 @@
         });
 
         window.onload = () => {
-            console.log('🌊 ClipperAI — Grok-style agents thinking ready');
+            console.log('🌊 ClipperAI — Advanced Grok-style thinking animation');
         };
     </script>
 </body>
