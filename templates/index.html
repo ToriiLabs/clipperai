@@ -18,51 +18,47 @@
         body { background-color: #f8f9fa; }
         .dark body { background-color: #0f172a; }
 
-        /* Wave Background */
         #wave-bg {
             position: fixed;
             inset: 0;
             pointer-events: none;
             z-index: -1;
-            opacity: 0.12;
+            opacity: 0.08;
             overflow: hidden;
         }
 
-        /* HIGH PERFORMANCE Thinking Animation */
-        .thinking-container { 
-            text-align: center; 
-            padding: 12px 0; 
+        /* GROK-STYLE THINKING ANIMATION */
+        .thinking-container {
+            text-align: center;
+            padding: 24px 0;
         }
-        .wave-circle {
-            width: 36px;
-            height: 36px;
-            margin: 0 auto 8px;
-            position: relative;
-            will-change: transform;
-            transform: translateZ(0);           /* Force GPU acceleration */
+        .agents-thinking {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 8px;
         }
-        .wave-ring {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            border: 2.5px solid transparent;
-            border-top-color: #3b82f6;
+        .dot {
+            width: 10px;
+            height: 10px;
+            background: #3b82f6;
             border-radius: 50%;
-            animation: spin 1.2s linear infinite;
-            will-change: transform;
-            backface-visibility: hidden;
-            transform: translateZ(0);
+            animation: pulse 1.4s infinite ease-in-out;
         }
-        .wave-ring.delay-1 { border-top-color: #22d3ee; animation-delay: 180ms; }
-        .wave-ring.delay-2 { border-top-color: #a5f3fc; animation-delay: 420ms; }
+        .dot:nth-child(2) { animation-delay: 150ms; background: #22d3ee; }
+        .dot:nth-child(3) { animation-delay: 300ms; background: #a5f3fc; }
+        .dot:nth-child(4) { animation-delay: 450ms; background: #3b82f6; }
+        .dot:nth-child(5) { animation-delay: 600ms; background: #22d3ee; }
 
-        @keyframes spin { 
-            to { transform: rotate(360deg); } 
+        @keyframes pulse {
+            0%, 100% { transform: scale(0.4); opacity: 0.4; }
+            50% { transform: scale(1); opacity: 1; }
         }
 
         .thinking-text {
             font-weight: 600;
-            font-size: 0.92rem;
+            font-size: 0.95rem;
             color: #3b82f6;
         }
         .dark .thinking-text { color: #60a5fa; }
@@ -81,7 +77,7 @@
         </svg>
     </div>
 
-    <!-- SIDEBAR + CHAT (same as before) -->
+    <!-- SIDEBAR -->
     <div class="w-80 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col relative z-10">
         <div class="p-4 border-b border-gray-200 dark:border-gray-800 flex items-center gap-3">
             <h1 class="text-2xl font-semibold tracking-tight text-gray-900 dark:text-white">ClipperAI</h1>
@@ -99,6 +95,7 @@
         </div>
     </div>
 
+    <!-- MAIN CHAT -->
     <div class="flex-1 flex flex-col relative z-10">
         <div class="h-14 border-b border-gray-200 dark:border-gray-800 flex items-center px-6 justify-between bg-white dark:bg-gray-900">
             <span id="session-title" class="font-semibold text-lg text-gray-900 dark:text-white">New Conversation</span>
@@ -116,133 +113,4 @@
         <div class="p-4 border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
             <div class="flex gap-3">
                 <input id="input" type="text" placeholder="Type your message..." 
-                       class="flex-1 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 focus:border-blue-500 rounded-3xl px-6 py-4 outline-none text-lg text-gray-900 dark:text-white">
-                <button onclick="sendMessage()" class="bg-blue-600 hover:bg-blue-700 w-12 h-12 rounded-3xl flex items-center justify-center text-white">
-                    <i class="fa-solid fa-paper-plane"></i>
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        const chat = document.getElementById('chat');
-        const input = document.getElementById('input');
-        const waveBg = document.getElementById('wave-bg');
-
-        function addMessage(text, type) {
-            const div = document.createElement('div');
-            div.className = `flex ${type === 'user' ? 'justify-end' : 'justify-start'} message`;
-            div.innerHTML = `<div class="${type === 'user' ? 'chat-bubble-user' : 'chat-bubble-ai'} px-5 py-4">${text}</div>`;
-            chat.appendChild(div);
-            chat.scrollTop = chat.scrollHeight;
-            return div;
-        }
-
-        function showThinkingUI(aiDiv, phase) {
-            if (phase === 'thinking') {
-                aiDiv.innerHTML = `
-                    <div class="thinking-container">
-                        <div class="wave-circle">
-                            <div class="wave-ring"></div>
-                            <div class="wave-ring delay-1"></div>
-                            <div class="wave-ring delay-2"></div>
-                        </div>
-                        <div class="thinking-text">Clipper is thinking...</div>
-                    </div>`;
-                waveBg.classList.add('thinking');
-            } else if (phase === 'reflecting') {
-                aiDiv.innerHTML = `
-                    <div class="thinking-container">
-                        <div class="wave-circle">
-                            <div class="wave-ring"></div>
-                        </div>
-                        <div class="thinking-text">Reflecting...</div>
-                    </div>`;
-                waveBg.classList.remove('thinking');
-                waveBg.classList.add('reflecting');
-            } else if (phase === 'final') {
-                aiDiv.innerHTML = `<div class="prose text-gray-900 dark:text-gray-100"></div>`;
-                waveBg.classList.remove('thinking', 'reflecting');
-            }
-        }
-
-        async function sendMessage() {
-            const message = input.value.trim();
-            if (!message) return;
-
-            addMessage(message, 'user');
-            input.value = '';
-
-            const aiDiv = addMessage('<span class="text-gray-400">Thinking...</span>', 'ai');
-
-            try {
-                const response = await fetch('/api/stream', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message })
-                });
-
-                if (!response.ok) throw new Error(`Server error ${response.status}`);
-
-                const reader = response.body.getReader();
-                const decoder = new TextDecoder();
-                let buffer = '';
-                let finalText = '';
-
-                while (true) {
-                    const { value, done } = await reader.read();
-                    if (done) break;
-
-                    buffer += decoder.decode(value, { stream: true });
-                    const lines = buffer.split('\n');
-                    buffer = lines.pop() || '';
-
-                    for (const line of lines) {
-                        if (line.startsWith('data: ')) {
-                            const jsonStr = line.slice(6).trim();
-                            if (!jsonStr) continue;
-
-                            try {
-                                const data = JSON.parse(jsonStr);
-                                if (data.phase) {
-                                    showThinkingUI(aiDiv, data.phase);
-                                } else if (data.token) {
-                                    finalText += data.token;
-                                    const textContainer = aiDiv.querySelector('.prose');
-                                    if (textContainer) textContainer.textContent = finalText;
-                                    else aiDiv.querySelector('div').innerHTML = finalText;
-                                    chat.scrollTop = chat.scrollHeight;
-                                }
-                            } catch (e) {}
-                        }
-                    }
-                }
-            } catch (error) {
-                console.error('Stream error:', error);
-                aiDiv.innerHTML = '❌ Error connecting to AI';
-            }
-        }
-
-        function toggleDayNight() {
-            document.documentElement.classList.toggle('dark');
-        }
-
-        function newSession() { location.reload(); }
-        function clearChat() { chat.innerHTML = ''; }
-
-        async function clearAll() {
-            if (!confirm('Clear ALL conversations and memory?')) return;
-            await fetch('/api/clear', { method: 'POST' });
-            chat.innerHTML = '';
-        }
-
-        input.addEventListener('keypress', (e) => { 
-            if (e.key === 'Enter') sendMessage(); 
-        });
-
-        window.onload = () => {
-            console.log('🌊 ClipperAI — optimized performance thinking animation');
-        };
-    </script>
-</body>
-</html>
+                       class="flex-1 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 focus
