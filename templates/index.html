@@ -7,60 +7,22 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;display=swap');
-        
         body { font-family: 'Inter', system-ui, sans-serif; }
-
+        
         .chat-bubble-user {
-            background: linear-gradient(135deg, #2563eb, #1e40af);
+            background: #3b82f6;
             color: white;
             border-radius: 20px 20px 6px 20px;
         }
         
         .chat-bubble-ai {
-            background: #374151;           /* Slightly lighter for better contrast */
-            color: #f3f4f6;                /* Light gray text */
+            background: #374151;
+            color: #f3f4f6;
             border-radius: 20px 20px 20px 6px;
-        }
-
-        .message {
-            max-width: 82%;
-            animation: messageSlide 0.25s ease-out;
-        }
-
-        @keyframes messageSlide {
-            from { opacity: 0; transform: translateY(8px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        #wave-bg {
-            position: fixed;
-            inset: 0;
-            pointer-events: none;
-            z-index: -1;
-            opacity: 0.07;
-        }
-
-        .thinking-text {
-            font-weight: 600;
-            font-size: 0.93rem;
-            color: #60a5fa;
         }
     </style>
 </head>
 <body class="flex h-screen overflow-hidden bg-slate-950 text-gray-100">
-    
-    <!-- Wave Background -->
-    <div id="wave-bg">
-        <svg width="100%" height="100%" viewBox="0 0 1440 900" preserveAspectRatio="none">
-            <path id="wave1" d="M0 620 Q360 420 720 580 Q1080 720 1440 540 L1440 900 L0 900 Z" 
-                  fill="none" stroke="#334155" stroke-width="120" stroke-opacity="0.5"/>
-            <path id="wave2" d="M0 655 Q300 495 720 635 Q1140 765 1440 585 L1440 900 L0 900 Z" 
-                  fill="none" stroke="#1e40af" stroke-width="70" stroke-opacity="0.4"/>
-            <path id="wave3" d="M160 585 Q250 525 335 575 Q425 515 510 570" 
-                  fill="none" stroke="#60a5fa" stroke-width="24" stroke-opacity="0.6"/>
-        </svg>
-    </div>
 
     <!-- Sidebar -->
     <div class="w-80 bg-gray-900 border-r border-gray-800 flex flex-col">
@@ -92,9 +54,6 @@
     <div class="flex-1 flex flex-col">
         <div class="h-14 border-b border-gray-800 flex items-center px-6 justify-between bg-gray-900">
             <span id="session-title" class="font-semibold text-lg">New Conversation</span>
-            <button onclick="toggleDayNight()" class="text-gray-400 hover:text-white">
-                <i class="fa-solid fa-moon text-lg"></i>
-            </button>
         </div>
 
         <div id="chat" class="flex-1 overflow-y-auto p-6 space-y-6 bg-gray-950"></div>
@@ -118,15 +77,10 @@
         function addMessage(text, type) {
             const div = document.createElement('div');
             div.className = `flex ${type === 'user' ? 'justify-end' : 'justify-start'} message`;
-            
-            if (type === 'user') {
-                div.innerHTML = `<div class="chat-bubble-user px-5 py-3.5 max-w-[75%]">${text}</div>`;
-            } else {
-                div.innerHTML = `
-                    <div class="chat-bubble-ai px-5 py-3.5 max-w-[82%]">
-                        <div class="prose prose-sm max-w-none text-gray-100">${text}</div>
-                    </div>`;
-            }
+            div.innerHTML = `
+                <div class="${type === 'user' ? 'chat-bubble-user' : 'chat-bubble-ai'} px-5 py-3.5 max-w-[80%]">
+                    ${text}
+                </div>`;
             chat.appendChild(div);
             chat.scrollTop = chat.scrollHeight;
             return div;
@@ -139,6 +93,7 @@
             addMessage(message, 'user');
             input.value = '';
 
+            // Create AI message bubble
             const aiDiv = addMessage('<span class="text-gray-400">Thinking...</span>', 'ai');
 
             try {
@@ -148,41 +103,60 @@
                     body: JSON.stringify({ message })
                 });
 
+                if (!response.ok) throw new Error('Server error');
+
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder();
+                let buffer = '';
                 let finalText = '';
 
                 while (true) {
                     const { value, done } = await reader.read();
                     if (done) break;
 
-                    const chunk = decoder.decode(value);
-                    finalText += chunk;
+                    buffer += decoder.decode(value, { stream: true });
+                    const lines = buffer.split('\n');
+                    buffer = lines.pop() || ''; // Keep incomplete line in buffer
 
-                    const contentDiv = aiDiv.querySelector('.prose');
-                    if (contentDiv) contentDiv.innerHTML = finalText;
-                    chat.scrollTop = chat.scrollHeight;
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            const jsonStr = line.slice(6).trim();
+                            if (!jsonStr) continue;
+
+                            try {
+                                const data = JSON.parse(jsonStr);
+
+                                if (data.phase) {
+                                    // You can show different text based on phase if you want
+                                    if (data.phase === 'thinking') {
+                                        aiDiv.innerHTML = `<div class="chat-bubble-ai px-5 py-3.5">Thinking...</div>`;
+                                    } else if (data.phase === 'reflecting') {
+                                        aiDiv.innerHTML = `<div class="chat-bubble-ai px-5 py-3.5">Reflecting...</div>`;
+                                    } else if (data.phase === 'final') {
+                                        aiDiv.innerHTML = `<div class="chat-bubble-ai px-5 py-3.5"><span class="prose text-gray-100"></span></div>`;
+                                    }
+                                } 
+                                else if (data.token) {
+                                    finalText += data.token;
+                                    const content = aiDiv.querySelector('.prose') || aiDiv;
+                                    content.innerHTML = finalText;
+                                    chat.scrollTop = chat.scrollHeight;
+                                }
+                            } catch (e) {
+                                console.error('JSON parse error:', jsonStr);
+                            }
+                        }
+                    }
                 }
-            } catch (err) {
-                aiDiv.innerHTML = `<div class="text-red-400 px-4 py-2">Error connecting to model</div>`;
+            } catch (error) {
+                console.error(error);
+                aiDiv.innerHTML = `<div class="text-red-400 px-4 py-2">Error: Could not connect to model</div>`;
             }
-        }
-
-        function toggleDayNight() {
-            document.documentElement.classList.toggle('dark');
         }
 
         function newSession() { location.reload(); }
-        function clearChat() { chat.innerHTML = ''; }
-        
-        async function clearAll() {
-            if (confirm('Clear everything?')) {
-                await fetch('/api/clear', { method: 'POST' });
-                chat.innerHTML = '';
-            }
-        }
 
-        input.addEventListener('keypress', e => {
+        input.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') sendMessage();
         });
     </script>
