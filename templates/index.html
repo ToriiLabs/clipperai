@@ -3,123 +3,170 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ClipperAI</title>
+    <title>ToriiLabs</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
-        body { font-family: 'Inter', system-ui, sans-serif; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;display=swap');
+        
+        body { 
+            font-family: 'Inter', system-ui, sans-serif; 
+        }
+        
+        .chat-bubble-user { 
+            background: #3b82f6; 
+            color: white; 
+            border-radius: 20px 20px 4px 20px; 
+        }
+        .chat-bubble-ai { 
+            background: #1f2937; 
+            border-radius: 20px 20px 20px 4px; 
+        }
+        
+        .message { 
+            max-width: 80%; 
+            animation: fadeIn 0.3s ease; 
+        }
 
-        .chat-bubble-user { background: #3b82f6; color: white; border-radius: 20px 20px 4px 20px; }
-        .chat-bubble-ai { background: #1f2937; border-radius: 20px 20px 20px 4px; }
-
-        .message { max-width: 80%; animation: fadeIn 0.3s ease; }
-
-        body { background-color: #f8f9fa; }
-        .dark body { background-color: #0f172a; }
-
+        /* === WAVE BACKGROUND === */
         #wave-bg {
             position: fixed;
             inset: 0;
             pointer-events: none;
             z-index: -1;
-            opacity: 0.08;
+            opacity: 0.09;
             overflow: hidden;
+            transition: opacity 0.4s ease;
+        }
+        
+        .dark #wave-bg {
+            opacity: 0.08;
         }
 
-        /* === GROK-STYLE AGENTS THINKING (Advanced CSS) === */
+        #wave-bg path {
+            transition: stroke 0.4s ease;
+            animation: waveDrift 8s ease-in-out infinite;
+        }
+        
+        #wave-bg .wave-1 { animation-duration: 7s; }
+        #wave-bg .wave-2 { animation-duration: 9s; animation-delay: -2s; }
+        #wave-bg .wave-3 { animation-duration: 6s; animation-delay: -4s; }
+
+        @keyframes waveDrift {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(25px); }
+        }
+
+        /* === THINKING ANIMATION === */
         .thinking-container {
+            padding: 24px 0 16px;
             text-align: center;
-            padding: 28px 0 20px;
         }
-
+        
         .agents-thinking {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 7px;
-            margin-bottom: 10px;
+            gap: 8px;
+            margin-bottom: 12px;
         }
-
+        
         .dot {
-            width: 11px;
-            height: 11px;
+            width: 12px;
+            height: 12px;
             background: #3b82f6;
             border-radius: 50%;
-            animation: grokPulse 1.4s infinite ease-in-out;
-            will-change: transform, opacity;
-            transform: translateZ(0);
+            animation: grokPulse 1.5s infinite ease-in-out;
         }
-
-        .dot:nth-child(2) { animation-delay: 120ms; background: #22d3ee; }
-        .dot:nth-child(3) { animation-delay: 240ms; background: #a5f3fc; }
-        .dot:nth-child(4) { animation-delay: 360ms; background: #3b82f6; }
-        .dot:nth-child(5) { animation-delay: 480ms; background: #22d3ee; }
+        
+        .dot:nth-child(2) { animation-delay: 150ms; background: #22d3ee; }
+        .dot:nth-child(3) { animation-delay: 300ms; background: #67e8f9; }
+        .dot:nth-child(4) { animation-delay: 450ms; background: #3b82f6; }
+        .dot:nth-child(5) { animation-delay: 600ms; background: #22d3ee; }
 
         @keyframes grokPulse {
-            0%, 100% { transform: scale(0.4); opacity: 0.3; }
-            50%      { transform: scale(1.15); opacity: 1; }
+            0%, 100% { transform: scale(0.35); opacity: 0.35; }
+            50% { transform: scale(1.1); opacity: 1; }
         }
 
         .thinking-text {
             font-weight: 600;
             font-size: 0.95rem;
-            color: #3b82f6;
             letter-spacing: 0.5px;
         }
-        .dark .thinking-text { color: #60a5fa; }
 
+        .dark .thinking-text { color: #60a5fa; }
+        
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
-<body class="flex h-screen overflow-hidden">
-
+<body class="flex h-screen overflow-hidden bg-slate-50 dark:bg-slate-950">
     <!-- Wave Background -->
-    <div id="wave-bg" class="night">
+    <div id="wave-bg">
         <svg width="100%" height="100%" viewBox="0 0 1440 900" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M0 620 Q360 420 720 580 Q1080 720 1440 540 L1440 900 L0 900 Z" fill="none" stroke="#0f172a" stroke-width="120" stroke-opacity="0.6"/>
-            <path d="M0 660 Q300 500 720 640 Q1140 770 1440 590 L1440 900 L0 900 Z" fill="none" stroke="#1e40af" stroke-width="70" stroke-opacity="0.5"/>
-            <path d="M180 590 Q260 530 340 580 Q420 520 500 575" fill="none" stroke="#60a5fa" stroke-width="25" stroke-opacity="0.8"/>
+            <path class="wave-1" d="M0 620 Q360 420 720 580 Q1080 720 1440 540 L1440 900 L0 900 Z" 
+                  fill="none" stroke="#334155" stroke-width="110" stroke-opacity="0.6"/>
+            <path class="wave-2" d="M0 660 Q300 500 720 640 Q1140 770 1440 590 L1440 900 L0 900 Z" 
+                  fill="none" stroke="#1e40af" stroke-width="65" stroke-opacity="0.5"/>
+            <path class="wave-3" d="M180 590 Q260 530 340 580 Q420 520 500 575" 
+                  fill="none" stroke="#60a5fa" stroke-width="22" stroke-opacity="0.75"/>
         </svg>
     </div>
 
-    <!-- Sidebar + Chat (unchanged layout) -->
+    <!-- Sidebar -->
     <div class="w-80 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col relative z-10">
         <div class="p-4 border-b border-gray-200 dark:border-gray-800 flex items-center gap-3">
-            <h1 class="text-2xl font-semibold tracking-tight text-gray-900 dark:text-white">ClipperAI</h1>
+            <h1 class="text-2xl font-semibold tracking-tight text-gray-900 dark:text-white">ToriiLabs</h1>
         </div>
-        <div onclick="newSession()" class="mx-4 mt-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl py-3 px-4 flex items-center justify-center gap-2 cursor-pointer transition-colors">
+        
+        <div onclick="newSession()" 
+             class="mx-4 mt-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl py-3 px-4 flex items-center justify-center gap-2 cursor-pointer transition-colors">
             <i class="fa-solid fa-plus"></i>
             <span class="font-medium">New Conversation</span>
         </div>
+
         <div class="px-4 py-2 text-xs uppercase tracking-widest text-gray-500 dark:text-gray-400 mt-6">Conversations</div>
         <div id="history-list" class="flex-1 overflow-y-auto px-2 space-y-1 text-sm"></div>
+
         <div class="px-4 py-2 text-xs uppercase tracking-widest text-gray-500 dark:text-gray-400">Memory</div>
         <div id="clips-list" class="flex-1 overflow-y-auto px-4 space-y-3 text-sm"></div>
+
         <div class="p-4 border-t border-gray-200 dark:border-gray-800 text-xs text-gray-500 flex items-center justify-between">
             <span onclick="clearAll()" class="cursor-pointer hover:text-gray-700 dark:hover:text-white">Clear All</span>
         </div>
     </div>
 
+    <!-- Main Chat Area -->
     <div class="flex-1 flex flex-col relative z-10">
+        <!-- Header -->
         <div class="h-14 border-b border-gray-200 dark:border-gray-800 flex items-center px-6 justify-between bg-white dark:bg-gray-900">
             <span id="session-title" class="font-semibold text-lg text-gray-900 dark:text-white">New Conversation</span>
-            <button onclick="toggleDayNight()" class="flex items-center gap-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white text-xl">
-                <i class="fa-solid fa-sun"></i>
-            </button>
-            <button onclick="clearChat()" class="flex items-center gap-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white">
-                <i class="fa-solid fa-trash"></i>
-                <span class="text-sm">Clear</span>
-            </button>
+            
+            <div class="flex items-center gap-4">
+                <!-- Day/Night Toggle -->
+                <button id="daynight-btn" onclick="toggleDayNight()" 
+                        class="flex items-center justify-center w-9 h-9 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white text-xl transition-colors">
+                    <i class="fa-solid fa-moon"></i>
+                </button>
+                
+                <button onclick="clearChat()" 
+                        class="flex items-center gap-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white">
+                    <i class="fa-solid fa-trash"></i>
+                    <span class="text-sm">Clear</span>
+                </button>
+            </div>
         </div>
 
+        <!-- Chat Messages -->
         <div id="chat" class="flex-1 overflow-y-auto p-6 space-y-8 bg-white dark:bg-gray-950"></div>
 
+        <!-- Input -->
         <div class="p-4 border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
             <div class="flex gap-3">
-                <input id="input" type="text" placeholder="Type your message..." 
+                <input id="input" type="text" placeholder="Type your message..."
                        class="flex-1 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 focus:border-blue-500 rounded-3xl px-6 py-4 outline-none text-lg text-gray-900 dark:text-white">
-                <button onclick="sendMessage()" class="bg-blue-600 hover:bg-blue-700 w-12 h-12 rounded-3xl flex items-center justify-center text-white">
+                <button onclick="sendMessage()" 
+                        class="bg-blue-600 hover:bg-blue-700 w-12 h-12 rounded-3xl flex items-center justify-center text-white transition-colors">
                     <i class="fa-solid fa-paper-plane"></i>
                 </button>
             </div>
@@ -127,10 +174,10 @@
     </div>
 
     <script>
-        // (Same script as before - only the thinking UI part is updated)
         const chat = document.getElementById('chat');
         const input = document.getElementById('input');
         const waveBg = document.getElementById('wave-bg');
+        const dayNightBtn = document.getElementById('daynight-btn');
 
         function addMessage(text, type) {
             const div = document.createElement('div');
@@ -139,6 +186,31 @@
             chat.appendChild(div);
             chat.scrollTop = chat.scrollHeight;
             return div;
+        }
+
+        function updateWaveColors(phase = null) {
+            const paths = waveBg.querySelectorAll('path');
+            const isDark = document.documentElement.classList.contains('dark');
+
+            let colors;
+            
+            if (phase === 'thinking') {
+                colors = isDark 
+                    ? ['#1e40af', '#3b82f6', '#60a5fa'] 
+                    : ['#64748b', '#3b82f6', '#0ea5e9'];
+            } else if (phase === 'reflecting') {
+                colors = isDark 
+                    ? ['#0e7490', '#22d3ee', '#67e8f9'] 
+                    : ['#0e7490', '#06b67f', '#14b8a6'];
+            } else {
+                colors = isDark 
+                    ? ['#334155', '#1e40af', '#60a5fa'] 
+                    : ['#64748b', '#334155', '#0ea5e9'];
+            }
+
+            if (paths[0]) paths[0].setAttribute('stroke', colors[0]);
+            if (paths[1]) paths[1].setAttribute('stroke', colors[1]);
+            if (paths[2]) paths[2].setAttribute('stroke', colors[2]);
         }
 
         function showThinkingUI(aiDiv, phase) {
@@ -152,9 +224,10 @@
                             <div class="dot"></div>
                             <div class="dot"></div>
                         </div>
-                        <div class="thinking-text">Clipper Agents thinking</div>
+                        <div class="thinking-text text-blue-600 dark:text-blue-400">Torii Agents thinking</div>
                     </div>`;
-                waveBg.classList.add('thinking');
+                updateWaveColors('thinking');
+                
             } else if (phase === 'reflecting') {
                 aiDiv.innerHTML = `
                     <div class="thinking-container">
@@ -163,17 +236,16 @@
                             <div class="dot"></div>
                             <div class="dot"></div>
                         </div>
-                        <div class="thinking-text">Reflecting...</div>
+                        <div class="thinking-text text-teal-600 dark:text-teal-400">Reflecting...</div>
                     </div>`;
-                waveBg.classList.remove('thinking');
-                waveBg.classList.add('reflecting');
+                updateWaveColors('reflecting');
+                
             } else if (phase === 'final') {
                 aiDiv.innerHTML = `<div class="prose text-gray-900 dark:text-gray-100"></div>`;
-                waveBg.classList.remove('thinking', 'reflecting');
+                updateWaveColors(null);
             }
         }
 
-        // Rest of your sendMessage, toggleDayNight, etc. functions remain the same
         async function sendMessage() {
             const message = input.value.trim();
             if (!message) return;
@@ -212,13 +284,19 @@
 
                             try {
                                 const data = JSON.parse(jsonStr);
+
                                 if (data.phase) {
                                     showThinkingUI(aiDiv, data.phase);
-                                } else if (data.token) {
+                                } 
+                                else if (data.token) {
                                     finalText += data.token;
-                                    const textContainer = aiDiv.querySelector('.prose');
-                                    if (textContainer) textContainer.textContent = finalText;
-                                    else aiDiv.querySelector('div').innerHTML = finalText;
+                                    
+                                    let textContainer = aiDiv.querySelector('.prose');
+                                    if (!textContainer) {
+                                        aiDiv.innerHTML = `<div class="prose text-gray-900 dark:text-gray-100"></div>`;
+                                        textContainer = aiDiv.querySelector('.prose');
+                                    }
+                                    textContainer.textContent = finalText;
                                     chat.scrollTop = chat.scrollHeight;
                                 }
                             } catch (e) {}
@@ -227,29 +305,49 @@
                 }
             } catch (error) {
                 console.error('Stream error:', error);
-                aiDiv.innerHTML = '❌ Error connecting to AI';
+                aiDiv.innerHTML = `<div class="text-red-500">❌ Error connecting to AI</div>`;
             }
         }
 
         function toggleDayNight() {
-            document.documentElement.classList.toggle('dark');
+            const html = document.documentElement;
+            html.classList.toggle('dark');
+
+            const icon = dayNightBtn.querySelector('i');
+            
+            if (html.classList.contains('dark')) {
+                icon.classList.remove('fa-sun');
+                icon.classList.add('fa-moon');
+            } else {
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun');
+            }
+
+            updateWaveColors();
         }
 
-        function newSession() { location.reload(); }
-        function clearChat() { chat.innerHTML = ''; }
-
+        function newSession() { 
+            location.reload(); 
+        }
+        
+        function clearChat() { 
+            chat.innerHTML = ''; 
+        }
+        
         async function clearAll() {
             if (!confirm('Clear ALL conversations and memory?')) return;
             await fetch('/api/clear', { method: 'POST' });
             chat.innerHTML = '';
         }
 
-        input.addEventListener('keypress', (e) => { 
-            if (e.key === 'Enter') sendMessage(); 
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
         });
 
+        // Initialize wave colors on load
         window.onload = () => {
-            console.log('🌊 ClipperAI — Advanced Grok-style thinking animation');
+            updateWaveColors();
+            console.log('🌊 ToriiLabs — Ready');
         };
     </script>
 </body>
