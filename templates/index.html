@@ -35,7 +35,7 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* === WAVE BACKGROUND === */
+        /* Wave Background */
         #wave-bg {
             position: fixed;
             inset: 0;
@@ -50,7 +50,7 @@
             transition: stroke 0.6s ease, stroke-opacity 0.5s ease;
         }
 
-        /* === PREMIUM THINKING ORB === */
+        /* Premium Thinking Orb */
         .thinking-container {
             padding: 18px 0 10px;
             display: flex;
@@ -108,7 +108,6 @@
 
         .dark .thinking-text { color: #60a5fa; }
 
-        /* Copy button */
         .copy-btn {
             opacity: 0;
             transition: opacity 0.2s ease;
@@ -135,8 +134,38 @@
     <!-- Sidebar -->
     <div class="w-80 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col relative z-10">
         <div class="p-5 border-b border-gray-200 dark:border-gray-800">
-            <h1 class="text-3xl font-semibold tracking-tighter text-gray-900 dark:text-white">ToriiLabs</h1>
-            <p class="text-[10px] text-gray-500 dark:text-gray-400 tracking-[1px] mt-0.5">LOCAL • PRIVATE • AGENTIC</p>
+            <!-- ToriiLabs Logo with Torii Gate Dots -->
+            <div class="flex items-center">
+                <svg width="175" height="34" viewBox="0 0 175 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Tor -->
+                    <text x="2" y="26" font-family="Inter, system-ui, sans-serif" font-size="27" font-weight="600" fill="#111827" class="dark:fill-white">Tor</text>
+                    
+                    <!-- First I -->
+                    <text x="58" y="26" font-family="Inter, system-ui, sans-serif" font-size="27" font-weight="600" fill="#111827" class="dark:fill-white">i</text>
+                    
+                    <!-- Torii Gate Dot -->
+                    <g transform="translate(65, 4)">
+                        <rect x="0" y="3.5" width="2" height="9" rx="0.4" fill="#3b82f6"/>
+                        <rect x="8.5" y="3.5" width="2" height="9" rx="0.4" fill="#3b82f6"/>
+                        <rect x="-1.2" y="0" width="13.5" height="3.2" rx="0.8" fill="#3b82f6"/>
+                        <path d="M0.5 3.2 Q6.2 -0.8 11.8 3.2" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round"/>
+                    </g>
+
+                    <!-- Second I -->
+                    <text x="85" y="26" font-family="Inter, system-ui, sans-serif" font-size="27" font-weight="600" fill="#111827" class="dark:fill-white">i</text>
+                    
+                    <!-- Torii Gate Dot -->
+                    <g transform="translate(92, 4)">
+                        <rect x="0" y="3.5" width="2" height="9" rx="0.4" fill="#3b82f6"/>
+                        <rect x="8.5" y="3.5" width="2" height="9" rx="0.4" fill="#3b82f6"/>
+                        <rect x="-1.2" y="0" width="13.5" height="3.2" rx="0.8" fill="#3b82f6"/>
+                        <path d="M0.5 3.2 Q6.2 -0.8 11.8 3.2" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round"/>
+                    </g>
+
+                    <!-- Labs -->
+                    <text x="110" y="26" font-family="Inter, system-ui, sans-serif" font-size="27" font-weight="600" fill="#111827" class="dark:fill-white">Labs</text>
+                </svg>
+            </div>
         </div>
 
         <!-- New Conversation -->
@@ -178,7 +207,6 @@
             <span id="session-title" class="font-semibold text-lg text-gray-900 dark:text-white tracking-tight">New Conversation</span>
             
             <div class="flex items-center gap-1.5">
-                <!-- Theme Toggle -->
                 <button id="theme-toggle" onclick="toggleDayNight()"
                         class="w-9 h-9 flex items-center justify-center text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
                     <i class="fa-solid fa-moon text-lg"></i>
@@ -221,8 +249,6 @@
                 div.innerHTML = `
                     <div class="chat-bubble-ai px-5 py-4 text-[15px] leading-relaxed max-w-[82%] group relative">
                         <div class="prose prose-sm dark:prose-invert max-w-none"></div>
-                        
-                        <!-- Copy Button -->
                         <button onclick="copyMessage(this)" 
                                 class="copy-btn absolute top-3 right-3 w-7 h-7 flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 bg-gray-800/60 hover:bg-gray-700/70 rounded-lg transition-all">
                             <i class="fa-solid fa-copy text-xs"></i>
@@ -240,9 +266,7 @@
             navigator.clipboard.writeText(text.trim()).then(() => {
                 const originalIcon = btn.innerHTML;
                 btn.innerHTML = `<i class="fa-solid fa-check text-xs"></i>`;
-                setTimeout(() => {
-                    btn.innerHTML = originalIcon;
-                }, 1500);
+                setTimeout(() => btn.innerHTML = originalIcon, 1500);
             });
         }
 
@@ -259,14 +283,12 @@
                 wave2.setAttribute('stroke', isDark ? '#3b82f6' : '#0ea5e9');
                 wave3.setAttribute('stroke', '#22d3ee');
                 waveBg.style.opacity = isDark ? '0.12' : '0.10';
-            } 
-            else if (phase === 'reflecting') {
+            } else if (phase === 'reflecting') {
                 wave1.setAttribute('stroke', isDark ? '#0e7490' : '#0f766e');
                 wave2.setAttribute('stroke', isDark ? '#22d3ee' : '#14b8a6');
                 wave3.setAttribute('stroke', '#67e8f9');
                 waveBg.style.opacity = isDark ? '0.10' : '0.08';
-            } 
-            else {
+            } else {
                 wave1.setAttribute('stroke', isDark ? '#334155' : '#64748b');
                 wave2.setAttribute('stroke', isDark ? '#1e40af' : '#334155');
                 wave3.setAttribute('stroke', '#60a5fa');
@@ -349,7 +371,6 @@
 
                         try {
                             const data = JSON.parse(jsonStr);
-
                             if (data.phase) {
                                 showThinkingUI(aiDiv, data.phase);
                             } else if (data.token) {
@@ -402,7 +423,7 @@
 
         window.onload = () => {
             updateWavePhase(null);
-            console.log('%c[ToriiLabs] UI polished (A+B+C+D)', 'color:#64748b');
+            console.log('%c[ToriiLabs] Logo + UI updated', 'color:#64748b');
         };
     </script>
 </body>
