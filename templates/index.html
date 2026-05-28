@@ -23,37 +23,37 @@
             border-radius: 20px 20px 20px 6px;
         }
 
-        /* === GROK-STYLE THINKING ANIMATION === */
+        /* === 32px GROK-STYLE THINKING ORB === */
         .thinking-container {
-            padding: 16px 0;
+            padding: 8px 0;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 12px;
+            gap: 8px;
         }
 
         .thinking-orb {
             position: relative;
-            width: 64px;
-            height: 64px;
+            width: 32px;
+            height: 32px;
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
         .orb-core {
-            width: 22px;
-            height: 22px;
+            width: 12px;
+            height: 12px;
             background: #3b82f6;
             border-radius: 9999px;
             animation: orbPulse 1.8s ease-in-out infinite;
-            box-shadow: 0 0 0 6px rgba(59, 130, 246, 0.2),
-                        0 0 20px rgba(59, 130, 246, 0.6);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2),
+                        0 0 12px rgba(59, 130, 246, 0.6);
         }
 
         .orb-ring {
             position: absolute;
-            border: 2px solid #3b82f6;
+            border: 1.5px solid #3b82f6;
             border-radius: 9999px;
             animation: ringExpand 2s ease-out infinite;
             opacity: 0.5;
@@ -72,7 +72,7 @@
         }
 
         .thinking-text {
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             color: #60a5fa;
             font-weight: 500;
         }
@@ -147,9 +147,9 @@
                 aiDiv.innerHTML = `
                     <div class="thinking-container">
                         <div class="thinking-orb">
-                            <div class="orb-ring w-[64px] h-[64px]"></div>
-                            <div class="orb-ring w-[64px] h-[64px]"></div>
-                            <div class="orb-ring w-[64px] h-[64px]"></div>
+                            <div class="orb-ring w-[32px] h-[32px]"></div>
+                            <div class="orb-ring w-[32px] h-[32px]"></div>
+                            <div class="orb-ring w-[32px] h-[32px]"></div>
                             <div class="orb-core"></div>
                         </div>
                         <div class="thinking-text">Torii Agents thinking</div>
@@ -159,9 +159,9 @@
                 aiDiv.innerHTML = `
                     <div class="thinking-container">
                         <div class="thinking-orb">
-                            <div class="orb-ring w-[64px] h-[64px]"></div>
-                            <div class="orb-ring w-[64px] h-[64px]"></div>
-                            <div class="orb-core" style="background:#14b8a6; box-shadow: 0 0 0 6px rgba(20,184,166,0.2), 0 0 20px rgba(20,184,166,0.5);"></div>
+                            <div class="orb-ring w-[32px] h-[32px]"></div>
+                            <div class="orb-ring w-[32px] h-[32px]"></div>
+                            <div class="orb-core" style="background:#14b8a6; box-shadow: 0 0 0 4px rgba(20,184,166,0.2), 0 0 12px rgba(20,184,166,0.5);"></div>
                         </div>
                         <div class="thinking-text" style="color:#14b8a6;">Reflecting...</div>
                     </div>`;
