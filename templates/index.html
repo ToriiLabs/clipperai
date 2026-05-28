@@ -7,8 +7,10 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
     <style>
-        body { font-family: 'Inter', system-ui, sans-serif; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;display=swap');
         
+        body { font-family: 'Inter', system-ui, sans-serif; }
+
         .chat-bubble-user {
             background: #3b82f6;
             color: white;
@@ -19,6 +21,60 @@
             background: #374151;
             color: #f3f4f6;
             border-radius: 20px 20px 20px 6px;
+        }
+
+        /* === GROK-STYLE THINKING ANIMATION === */
+        .thinking-container {
+            padding: 16px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .thinking-orb {
+            position: relative;
+            width: 64px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .orb-core {
+            width: 22px;
+            height: 22px;
+            background: #3b82f6;
+            border-radius: 9999px;
+            animation: orbPulse 1.8s ease-in-out infinite;
+            box-shadow: 0 0 0 6px rgba(59, 130, 246, 0.2),
+                        0 0 20px rgba(59, 130, 246, 0.6);
+        }
+
+        .orb-ring {
+            position: absolute;
+            border: 2px solid #3b82f6;
+            border-radius: 9999px;
+            animation: ringExpand 2s ease-out infinite;
+            opacity: 0.5;
+        }
+        .orb-ring:nth-child(2) { animation-delay: 0.5s; border-color: #22d3ee; }
+        .orb-ring:nth-child(3) { animation-delay: 1s; border-color: #67e8f9; }
+
+        @keyframes orbPulse {
+            0%, 100% { transform: scale(0.9); }
+            50% { transform: scale(1.15); }
+        }
+
+        @keyframes ringExpand {
+            0% { transform: scale(0.6); opacity: 0.6; }
+            100% { transform: scale(2.1); opacity: 0; }
+        }
+
+        .thinking-text {
+            font-size: 0.9rem;
+            color: #60a5fa;
+            font-weight: 500;
         }
     </style>
 </head>
@@ -86,6 +142,38 @@
             return div;
         }
 
+        function showThinkingAnimation(aiDiv, phase) {
+            if (phase === 'thinking') {
+                aiDiv.innerHTML = `
+                    <div class="thinking-container">
+                        <div class="thinking-orb">
+                            <div class="orb-ring w-[64px] h-[64px]"></div>
+                            <div class="orb-ring w-[64px] h-[64px]"></div>
+                            <div class="orb-ring w-[64px] h-[64px]"></div>
+                            <div class="orb-core"></div>
+                        </div>
+                        <div class="thinking-text">Torii Agents thinking</div>
+                    </div>`;
+            } 
+            else if (phase === 'reflecting') {
+                aiDiv.innerHTML = `
+                    <div class="thinking-container">
+                        <div class="thinking-orb">
+                            <div class="orb-ring w-[64px] h-[64px]"></div>
+                            <div class="orb-ring w-[64px] h-[64px]"></div>
+                            <div class="orb-core" style="background:#14b8a6; box-shadow: 0 0 0 6px rgba(20,184,166,0.2), 0 0 20px rgba(20,184,166,0.5);"></div>
+                        </div>
+                        <div class="thinking-text" style="color:#14b8a6;">Reflecting...</div>
+                    </div>`;
+            } 
+            else if (phase === 'final') {
+                aiDiv.innerHTML = `
+                    <div class="chat-bubble-ai px-5 py-3.5 max-w-[80%]">
+                        <div class="prose text-gray-100"></div>
+                    </div>`;
+            }
+        }
+
         async function sendMessage() {
             const message = input.value.trim();
             if (!message) return;
@@ -93,8 +181,7 @@
             addMessage(message, 'user');
             input.value = '';
 
-            // Create AI message bubble
-            const aiDiv = addMessage('<span class="text-gray-400">Thinking...</span>', 'ai');
+            const aiDiv = addMessage('', 'ai');
 
             try {
                 const response = await fetch('/api/stream', {
@@ -116,41 +203,34 @@
 
                     buffer += decoder.decode(value, { stream: true });
                     const lines = buffer.split('\n');
-                    buffer = lines.pop() || ''; // Keep incomplete line in buffer
+                    buffer = lines.pop() || '';
 
                     for (const line of lines) {
-                        if (line.startsWith('data: ')) {
-                            const jsonStr = line.slice(6).trim();
-                            if (!jsonStr) continue;
+                        if (!line.startsWith('data: ')) continue;
 
-                            try {
-                                const data = JSON.parse(jsonStr);
+                        const jsonStr = line.slice(6).trim();
+                        if (!jsonStr) continue;
 
-                                if (data.phase) {
-                                    // You can show different text based on phase if you want
-                                    if (data.phase === 'thinking') {
-                                        aiDiv.innerHTML = `<div class="chat-bubble-ai px-5 py-3.5">Thinking...</div>`;
-                                    } else if (data.phase === 'reflecting') {
-                                        aiDiv.innerHTML = `<div class="chat-bubble-ai px-5 py-3.5">Reflecting...</div>`;
-                                    } else if (data.phase === 'final') {
-                                        aiDiv.innerHTML = `<div class="chat-bubble-ai px-5 py-3.5"><span class="prose text-gray-100"></span></div>`;
-                                    }
-                                } 
-                                else if (data.token) {
-                                    finalText += data.token;
-                                    const content = aiDiv.querySelector('.prose') || aiDiv;
-                                    content.innerHTML = finalText;
-                                    chat.scrollTop = chat.scrollHeight;
+                        try {
+                            const data = JSON.parse(jsonStr);
+
+                            if (data.phase) {
+                                showThinkingAnimation(aiDiv, data.phase);
+                            } 
+                            else if (data.token) {
+                                finalText += data.token;
+                                const contentDiv = aiDiv.querySelector('.prose');
+                                if (contentDiv) {
+                                    contentDiv.innerHTML = finalText;
                                 }
-                            } catch (e) {
-                                console.error('JSON parse error:', jsonStr);
+                                chat.scrollTop = chat.scrollHeight;
                             }
-                        }
+                        } catch (e) {}
                     }
                 }
             } catch (error) {
                 console.error(error);
-                aiDiv.innerHTML = `<div class="text-red-400 px-4 py-2">Error: Could not connect to model</div>`;
+                aiDiv.innerHTML = `<div class="text-red-400 px-4 py-2">Error connecting to model</div>`;
             }
         }
 
