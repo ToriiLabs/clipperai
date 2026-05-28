@@ -14,20 +14,25 @@
         }
 
         .chat-bubble-user {
-            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            background: linear-gradient(135deg, #2563eb, #1e40af);
             color: white;
-            border-radius: 20px 20px 4px 20px;
-            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+            border-radius: 22px 22px 6px 22px;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
         }
         
         .chat-bubble-ai {
             background: #1f2937;
-            border-radius: 20px 20px 20px 4px;
+            border-radius: 22px 22px 22px 6px;
         }
 
         .message {
             max-width: 82%;
-            animation: fadeIn 0.25s ease;
+            animation: messageSlide 0.25s ease-out;
+        }
+
+        @keyframes messageSlide {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         /* === WAVE BACKGROUND === */
@@ -36,88 +41,94 @@
             inset: 0;
             pointer-events: none;
             z-index: -1;
-            opacity: 0.08;
-            transition: opacity 0.5s ease;
+            opacity: 0.07;
+            transition: opacity 0.6s ease;
         }
-        
-        .dark #wave-bg { opacity: 0.07; }
+        .dark #wave-bg { opacity: 0.06; }
 
         #wave-bg path {
-            transition: stroke 0.5s ease, stroke-opacity 0.4s ease;
+            transition: stroke 0.6s ease, stroke-opacity 0.5s ease;
         }
 
         /* === PREMIUM THINKING ORB === */
         .thinking-container {
-            padding: 20px 0 12px;
+            padding: 18px 0 10px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 14px;
+            gap: 16px;
         }
 
         .thinking-orb {
             position: relative;
-            width: 68px;
-            height: 68px;
+            width: 72px;
+            height: 72px;
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
         .orb-core {
-            width: 28px;
-            height: 28px;
+            width: 26px;
+            height: 26px;
             background: #3b82f6;
             border-radius: 9999px;
             position: relative;
             z-index: 3;
-            animation: orbPulse 2s ease-in-out infinite;
-            box-shadow: 0 0 20px rgba(59, 130, 246, 0.6);
+            animation: orbPulse 2.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+            box-shadow: 0 0 0 8px rgba(59, 130, 246, 0.15),
+                        0 0 24px rgba(59, 130, 246, 0.5);
         }
 
         .orb-ring {
             position: absolute;
+            border: 2.5px solid #3b82f6;
             border-radius: 9999px;
-            border: 2px solid #3b82f6;
-            animation: ringExpand 2.2s ease-out infinite;
-            opacity: 0.6;
+            animation: ringExpand 2.6s cubic-bezier(0.25, 0.1, 0.25, 1) infinite;
+            opacity: 0.55;
         }
-        
-        .orb-ring:nth-child(2) { animation-delay: 0.6s; border-color: #22d3ee; }
-        .orb-ring:nth-child(3) { animation-delay: 1.2s; border-color: #67e8f9; }
+        .orb-ring:nth-child(2) { animation-delay: 0.7s; border-color: #22d3ee; }
+        .orb-ring:nth-child(3) { animation-delay: 1.4s; border-color: #67e8f9; }
 
         @keyframes orbPulse {
-            0%, 100% { transform: scale(0.9); }
-            50% { transform: scale(1.15); }
+            0%, 100% { transform: scale(0.92); }
+            50% { transform: scale(1.12); }
         }
         
         @keyframes ringExpand {
-            0% { transform: scale(0.6); opacity: 0.7; }
-            100% { transform: scale(2.1); opacity: 0; }
+            0% { transform: scale(0.55); opacity: 0.6; }
+            100% { transform: scale(2.3); opacity: 0; }
         }
 
         .thinking-text {
             font-weight: 600;
-            font-size: 0.95rem;
-            letter-spacing: 0.4px;
+            font-size: 0.93rem;
+            letter-spacing: 0.3px;
         }
 
         .dark .thinking-text { color: #60a5fa; }
 
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        /* Copy button */
+        .copy-btn {
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        .chat-bubble-ai:hover .copy-btn {
+            opacity: 1;
+        }
     </style>
 </head>
 <body class="flex h-screen overflow-hidden bg-slate-50 dark:bg-slate-950">
     
-    <!-- Animated Wave Background -->
+    <!-- Wave Background -->
     <div id="wave-bg">
         <svg width="100%" height="100%" viewBox="0 0 1440 900" preserveAspectRatio="none">
             <path id="wave1" d="M0 620 Q360 420 720 580 Q1080 720 1440 540 L1440 900 L0 900 Z" 
-                  fill="none" stroke="#334155" stroke-width="115" stroke-opacity="0.55"/>
-            <path id="wave2" d="M0 660 Q300 500 720 640 Q1140 770 1440 590 L1440 900 L0 900 Z" 
-                  fill="none" stroke="#1e40af" stroke-width="70" stroke-opacity="0.45"/>
-            <path id="wave3" d="M180 590 Q260 530 340 580 Q420 520 500 575" 
-                  fill="none" stroke="#60a5fa" stroke-width="24" stroke-opacity="0.7"/>
+                  fill="none" stroke="#334155" stroke-width="120" stroke-opacity="0.5"/>
+            <path id="wave2" d="M0 655 Q300 495 720 635 Q1140 765 1440 585 L1440 900 L0 900 Z" 
+                  fill="none" stroke="#1e40af" stroke-width="72" stroke-opacity="0.4"/>
+            <path id="wave3" d="M160 585 Q250 525 335 575 Q425 515 510 570" 
+                  fill="none" stroke="#60a5fa" stroke-width="26" stroke-opacity="0.65"/>
         </svg>
     </div>
 
@@ -125,63 +136,66 @@
     <div class="w-80 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col relative z-10">
         <div class="p-5 border-b border-gray-200 dark:border-gray-800">
             <h1 class="text-3xl font-semibold tracking-tighter text-gray-900 dark:text-white">ToriiLabs</h1>
-            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Local • Private • Agentic</p>
+            <p class="text-[10px] text-gray-500 dark:text-gray-400 tracking-[1px] mt-0.5">LOCAL • PRIVATE • AGENTIC</p>
         </div>
 
+        <!-- New Conversation -->
         <div onclick="newSession()" 
-             class="mx-4 mt-5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white rounded-2xl py-3.5 px-4 flex items-center justify-center gap-2 cursor-pointer transition-all shadow-sm">
-            <i class="fa-solid fa-plus"></i>
-            <span class="font-medium">New Conversation</span>
+             class="mx-4 mt-5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white rounded-2xl py-3.5 px-4 flex items-center justify-center gap-2 cursor-pointer transition-all text-sm font-medium shadow-sm">
+            <i class="fa-solid fa-plus text-sm"></i>
+            <span>New Conversation</span>
         </div>
 
-        <div class="px-4 pt-6 pb-2 text-xs uppercase tracking-[1.5px] text-gray-500 dark:text-gray-400 font-medium">Conversations</div>
-        <div id="history-list" class="flex-1 overflow-y-auto px-3 space-y-1 text-sm"></div>
+        <!-- Conversations -->
+        <div class="px-5 pt-6 pb-2">
+            <div class="flex items-center justify-between text-xs uppercase tracking-[1.5px] text-gray-500 dark:text-gray-400 font-medium mb-2">
+                <span>Conversations</span>
+            </div>
+            <div id="history-list" class="space-y-1 text-sm max-h-[180px] overflow-y-auto pr-1"></div>
+        </div>
 
-        <div class="px-4 pt-4 pb-2 text-xs uppercase tracking-[1.5px] text-gray-500 dark:text-gray-400 font-medium">Memory Clips</div>
-        <div id="clips-list" class="flex-1 overflow-y-auto px-4 space-y-2 text-sm"></div>
+        <!-- Memory Clips -->
+        <div class="px-5 pt-3 flex-1 flex flex-col min-h-0">
+            <div class="flex items-center justify-between text-xs uppercase tracking-[1.5px] text-gray-500 dark:text-gray-400 font-medium mb-2">
+                <span>Memory Clips</span>
+            </div>
+            <div id="clips-list" class="flex-1 overflow-y-auto space-y-1.5 pr-1 text-sm"></div>
+        </div>
 
         <div class="p-4 border-t border-gray-200 dark:border-gray-800">
             <button onclick="clearAll()" 
-                    class="w-full text-xs text-gray-500 hover:text-red-500 dark:hover:text-red-400 flex items-center justify-center gap-2 py-2 transition-colors">
+                    class="w-full flex items-center justify-center gap-2 text-xs text-gray-500 hover:text-red-500 dark:hover:text-red-400 py-2 transition-colors">
                 <i class="fa-solid fa-trash-can"></i>
                 <span>Clear All Data</span>
             </button>
         </div>
     </div>
 
-    <!-- Main Chat -->
+    <!-- Main Chat Area -->
     <div class="flex-1 flex flex-col relative z-10">
         <!-- Header -->
-        <div class="h-14 border-b border-gray-200 dark:border-gray-800 flex items-center px-6 justify-between bg-white/80 dark:bg-gray-900/80 backdrop-blur-md">
-            <div class="flex items-center gap-3">
-                <span id="session-title" class="font-semibold text-lg text-gray-900 dark:text-white">New Conversation</span>
-            </div>
+        <div class="h-14 border-b border-gray-200 dark:border-gray-800 flex items-center px-6 justify-between bg-white/90 dark:bg-gray-900/90 backdrop-blur-md">
+            <span id="session-title" class="font-semibold text-lg text-gray-900 dark:text-white tracking-tight">New Conversation</span>
             
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-1.5">
                 <!-- Theme Toggle -->
                 <button id="theme-toggle" onclick="toggleDayNight()"
                         class="w-9 h-9 flex items-center justify-center text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
                     <i class="fa-solid fa-moon text-lg"></i>
                 </button>
-                
-                <button onclick="clearChat()" 
-                        class="px-3 py-1.5 text-sm flex items-center gap-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-                    <i class="fa-solid fa-trash"></i>
-                    <span class="hidden sm:inline text-xs">Clear Chat</span>
-                </button>
             </div>
         </div>
 
         <!-- Messages -->
-        <div id="chat" class="flex-1 overflow-y-auto p-6 space-y-9 bg-white dark:bg-gray-950"></div>
+        <div id="chat" class="flex-1 overflow-y-auto p-6 space-y-8 bg-white dark:bg-gray-950"></div>
 
         <!-- Input -->
         <div class="p-5 border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
             <div class="flex gap-3 max-w-4xl mx-auto">
-                <input id="input" type="text" placeholder="Ask ToriiLabs anything..."
-                       class="flex-1 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 focus:border-blue-500 rounded-3xl px-6 py-4 text-[15px] outline-none text-gray-900 dark:text-white placeholder:text-gray-400">
+                <input id="input" type="text" placeholder="Message ToriiLabs..."
+                       class="flex-1 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 focus:border-blue-500 rounded-3xl px-6 py-[17px] text-[15px] outline-none text-gray-900 dark:text-white placeholder:text-gray-400 transition-all">
                 <button onclick="sendMessage()" 
-                        class="bg-blue-600 hover:bg-blue-700 w-14 h-14 rounded-3xl flex items-center justify-center text-white shadow-sm active:scale-[0.985] transition-all">
+                        class="bg-blue-600 hover:bg-blue-700 active:scale-[0.985] w-14 h-14 rounded-3xl flex items-center justify-center text-white shadow-sm transition-all">
                     <i class="fa-solid fa-paper-plane"></i>
                 </button>
             </div>
@@ -197,13 +211,39 @@
         function addMessage(text, type) {
             const div = document.createElement('div');
             div.className = `flex ${type === 'user' ? 'justify-end' : 'justify-start'} message`;
-            div.innerHTML = `
-                <div class="${type === 'user' ? 'chat-bubble-user' : 'chat-bubble-ai'} px-5 py-4 text-[15px] leading-relaxed">
-                    ${text}
-                </div>`;
+
+            if (type === 'user') {
+                div.innerHTML = `
+                    <div class="chat-bubble-user px-5 py-4 text-[15px] leading-relaxed max-w-[75%]">
+                        ${text}
+                    </div>`;
+            } else {
+                div.innerHTML = `
+                    <div class="chat-bubble-ai px-5 py-4 text-[15px] leading-relaxed max-w-[82%] group relative">
+                        <div class="prose prose-sm dark:prose-invert max-w-none"></div>
+                        
+                        <!-- Copy Button -->
+                        <button onclick="copyMessage(this)" 
+                                class="copy-btn absolute top-3 right-3 w-7 h-7 flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 bg-gray-800/60 hover:bg-gray-700/70 rounded-lg transition-all">
+                            <i class="fa-solid fa-copy text-xs"></i>
+                        </button>
+                    </div>`;
+            }
             chat.appendChild(div);
             chat.scrollTop = chat.scrollHeight;
             return div;
+        }
+
+        function copyMessage(btn) {
+            const bubble = btn.closest('.chat-bubble-ai');
+            const text = bubble.querySelector('.prose')?.textContent || bubble.textContent;
+            navigator.clipboard.writeText(text.trim()).then(() => {
+                const originalIcon = btn.innerHTML;
+                btn.innerHTML = `<i class="fa-solid fa-check text-xs"></i>`;
+                setTimeout(() => {
+                    btn.innerHTML = originalIcon;
+                }, 1500);
+            });
         }
 
         function updateWavePhase(phase) {
@@ -212,37 +252,36 @@
             const wave3 = document.getElementById('wave3');
             const isDark = document.documentElement.classList.contains('dark');
 
-            if (!wave1 || !wave2) return;
+            if (!wave1) return;
 
             if (phase === 'thinking') {
-                wave1.setAttribute('stroke', isDark ? '#1e40af' : '#3b82f6');
+                wave1.setAttribute('stroke', isDark ? '#1e40af' : '#2563eb');
                 wave2.setAttribute('stroke', isDark ? '#3b82f6' : '#0ea5e9');
                 wave3.setAttribute('stroke', '#22d3ee');
-                waveBg.style.opacity = isDark ? '0.13' : '0.11';
+                waveBg.style.opacity = isDark ? '0.12' : '0.10';
             } 
             else if (phase === 'reflecting') {
-                wave1.setAttribute('stroke', isDark ? '#0e7490' : '#14b8a6');
-                wave2.setAttribute('stroke', isDark ? '#22d3ee' : '#0ea5e9');
+                wave1.setAttribute('stroke', isDark ? '#0e7490' : '#0f766e');
+                wave2.setAttribute('stroke', isDark ? '#22d3ee' : '#14b8a6');
                 wave3.setAttribute('stroke', '#67e8f9');
-                waveBg.style.opacity = isDark ? '0.11' : '0.09';
+                waveBg.style.opacity = isDark ? '0.10' : '0.08';
             } 
             else {
-                // Default
                 wave1.setAttribute('stroke', isDark ? '#334155' : '#64748b');
                 wave2.setAttribute('stroke', isDark ? '#1e40af' : '#334155');
                 wave3.setAttribute('stroke', '#60a5fa');
-                waveBg.style.opacity = isDark ? '0.07' : '0.08';
+                waveBg.style.opacity = isDark ? '0.06' : '0.07';
             }
         }
 
         function showThinkingUI(aiDiv, phase) {
             if (phase === 'thinking') {
-                aiDiv.innerHTML = `
+                aiDiv.querySelector('.chat-bubble-ai').innerHTML = `
                     <div class="thinking-container">
                         <div class="thinking-orb">
-                            <div class="orb-ring w-[68px] h-[68px]"></div>
-                            <div class="orb-ring w-[68px] h-[68px]"></div>
-                            <div class="orb-ring w-[68px] h-[68px]"></div>
+                            <div class="orb-ring w-[72px] h-[72px]"></div>
+                            <div class="orb-ring w-[72px] h-[72px]"></div>
+                            <div class="orb-ring w-[72px] h-[72px]"></div>
                             <div class="orb-core"></div>
                         </div>
                         <div class="thinking-text text-blue-600 dark:text-blue-400">Torii Agents thinking</div>
@@ -250,19 +289,24 @@
                 updateWavePhase('thinking');
 
             } else if (phase === 'reflecting') {
-                aiDiv.innerHTML = `
+                aiDiv.querySelector('.chat-bubble-ai').innerHTML = `
                     <div class="thinking-container">
                         <div class="thinking-orb">
-                            <div class="orb-ring w-[68px] h-[68px]"></div>
-                            <div class="orb-ring w-[68px] h-[68px]"></div>
-                            <div class="orb-core" style="background:#14b8a6; box-shadow: 0 0 20px rgba(20, 184, 166, 0.5);"></div>
+                            <div class="orb-ring w-[72px] h-[72px]"></div>
+                            <div class="orb-ring w-[72px] h-[72px]"></div>
+                            <div class="orb-core" style="background:#14b8a6; box-shadow: 0 0 0 8px rgba(20,184,166,0.12), 0 0 24px rgba(20,184,166,0.4);"></div>
                         </div>
                         <div class="thinking-text text-teal-600 dark:text-teal-400">Reflecting on context...</div>
                     </div>`;
                 updateWavePhase('reflecting');
 
             } else if (phase === 'final') {
-                aiDiv.innerHTML = `<div class="prose prose-sm dark:prose-invert max-w-none text-[15px] leading-relaxed"></div>`;
+                const bubble = aiDiv.querySelector('.chat-bubble-ai');
+                bubble.innerHTML = `
+                    <div class="prose prose-sm dark:prose-invert max-w-none text-[15px] leading-relaxed pr-8"></div>
+                    <button onclick="copyMessage(this)" class="copy-btn absolute top-3 right-3 w-7 h-7 flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 bg-gray-800/60 hover:bg-gray-700/70 rounded-lg transition-all">
+                        <i class="fa-solid fa-copy text-xs"></i>
+                    </button>`;
                 updateWavePhase(null);
             }
         }
@@ -300,7 +344,6 @@
 
                     for (const line of lines) {
                         if (!line.startsWith('data: ')) continue;
-                        
                         const jsonStr = line.slice(6).trim();
                         if (!jsonStr) continue;
 
@@ -309,8 +352,7 @@
 
                             if (data.phase) {
                                 showThinkingUI(aiDiv, data.phase);
-                            } 
-                            else if (data.token) {
+                            } else if (data.token) {
                                 finalText += data.token;
                                 let container = aiDiv.querySelector('.prose');
                                 if (!container) {
@@ -325,7 +367,8 @@
                 }
             } catch (err) {
                 console.error(err);
-                aiDiv.innerHTML = `<div class="text-red-500 px-1">Connection error. Please try again.</div>`;
+                aiDiv.querySelector('.chat-bubble-ai').innerHTML = 
+                    `<div class="text-red-500 px-1 py-1">Connection error. Please try again.</div>`;
             }
         }
 
@@ -341,17 +384,11 @@
                 icon.classList.remove('fa-moon');
                 icon.classList.add('fa-sun');
             }
-            
             updateWavePhase(null);
         }
 
-        function newSession() {
-            location.reload();
-        }
-
-        function clearChat() {
-            chat.innerHTML = '';
-        }
+        function newSession() { location.reload(); }
+        function clearChat() { chat.innerHTML = ''; }
 
         async function clearAll() {
             if (!confirm('Clear all conversations and memory?')) return;
@@ -363,10 +400,9 @@
             if (e.key === 'Enter') sendMessage();
         });
 
-        // Initialize
         window.onload = () => {
             updateWavePhase(null);
-            console.log('%c[ToriiLabs] Premium frontend loaded', 'color:#64748b');
+            console.log('%c[ToriiLabs] UI polished (A+B+C+D)', 'color:#64748b');
         };
     </script>
 </body>
