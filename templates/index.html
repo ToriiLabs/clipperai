@@ -119,7 +119,7 @@
             font-weight: 600;
         }
 
-        /* === AGGRESSIVE TEXT WRAPPING FIX (this solves the one-word-per-line issue) === */
+        /* AI text - rock-solid horizontal wrapping */
         .ai-text {
             white-space: normal !important;
             word-break: break-word !important;
@@ -335,9 +335,11 @@
                                     aiText += data.token;
                                     const textDiv = aiBubble.querySelector('.ai-text');
                                     if (textDiv) {
-                                        textDiv.textContent = aiText;   // textContent + aggressive CSS = horizontal wrapping
+                                        textDiv.textContent = aiText;
+                                        chat.scrollTop = chat.scrollHeight;
                                     }
-                                    chat.scrollTop = chat.scrollHeight;
+                                    // SLOWED DOWN STREAMING - typewriter effect (25ms per token feels natural)
+                                    await new Promise(resolve => setTimeout(resolve, 25));
                                 }
                             } catch (e) {}
                         }
@@ -395,7 +397,7 @@
                 if (e.target.files[0]) handleFile(e.target.files[0]);
             });
 
-            console.log('%c✅ AI text wrapping FIXED - now fully horizontal!', 'color:#3b82f6;font-weight:bold');
+            console.log('%c✅ Streaming slowed down - now has beautiful typewriter effect!', 'color:#3b82f6;font-weight:bold');
         };
 
         async function handleFile(file) {
