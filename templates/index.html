@@ -23,7 +23,7 @@
             border-radius: 20px 20px 20px 6px;
         }
 
-        /* === MULTIPLE BEAUTIFUL ORBS + SOFT PASTEL EXPANDING RINGS === */
+        /* === SMALLER 24px MULTIPLE ORBS WITH PASTEL COLOR VARIETY === */
         .thinking-container {
             padding: 12px 0;
             display: flex;
@@ -34,57 +34,66 @@
 
         .multi-orbs {
             display: flex;
-            gap: 14px;
+            gap: 12px;
         }
 
         .thinking-orb {
             position: relative;
-            width: 28px;
-            height: 28px;
+            width: 24px;
+            height: 24px;
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
         .orb-core {
-            width: 10px;
-            height: 10px;
-            background: #3b82f6;
+            width: 9px;
+            height: 9px;
             border-radius: 9999px;
             animation: orbPulse 1.8s ease-in-out infinite;
-            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.25),
-                        0 0 12px rgba(59, 130, 246, 0.7);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3),
+                        0 0 10px rgba(59, 130, 246, 0.8);
         }
 
         .orb-ring {
             position: absolute;
-            border: 2px solid #3b82f6;
+            border: 2px solid;
             border-radius: 9999px;
             animation: ringExpand 2.2s ease-out infinite;
-            opacity: 0.6;
+            opacity: 0.65;
         }
 
-        /* Staggered delays for multiple orbs */
+        /* Color variations for each orb (Grok-style pastels) */
+        .orb-1 .orb-core { background: #3b82f6; }
+        .orb-1 .orb-ring { border-color: #3b82f6; }
+
+        .orb-2 .orb-core { background: #22d3ee; }
+        .orb-2 .orb-ring { border-color: #22d3ee; }
+
+        .orb-3 .orb-core { background: #14b8a6; }
+        .orb-3 .orb-ring { border-color: #14b8a6; }
+
+        /* Staggered animation for randomized feel */
         .thinking-orb:nth-child(1) .orb-ring { animation-delay: 0s; }
-        .thinking-orb:nth-child(1) .orb-ring:nth-child(2) { animation-delay: 0.4s; }
-        .thinking-orb:nth-child(1) .orb-ring:nth-child(3) { animation-delay: 0.8s; }
+        .thinking-orb:nth-child(1) .orb-ring:nth-child(2) { animation-delay: 0.35s; }
+        .thinking-orb:nth-child(1) .orb-ring:nth-child(3) { animation-delay: 0.7s; }
 
-        .thinking-orb:nth-child(2) .orb-ring { animation-delay: 0.2s; }
-        .thinking-orb:nth-child(2) .orb-ring:nth-child(2) { animation-delay: 0.6s; }
-        .thinking-orb:nth-child(2) .orb-ring:nth-child(3) { animation-delay: 1.0s; }
+        .thinking-orb:nth-child(2) .orb-ring { animation-delay: 0.15s; }
+        .thinking-orb:nth-child(2) .orb-ring:nth-child(2) { animation-delay: 0.5s; }
+        .thinking-orb:nth-child(2) .orb-ring:nth-child(3) { animation-delay: 0.85s; }
 
-        .thinking-orb:nth-child(3) .orb-ring { animation-delay: 0.4s; }
-        .thinking-orb:nth-child(3) .orb-ring:nth-child(2) { animation-delay: 0.8s; }
-        .thinking-orb:nth-child(3) .orb-ring:nth-child(3) { animation-delay: 1.2s; }
+        .thinking-orb:nth-child(3) .orb-ring { animation-delay: 0.3s; }
+        .thinking-orb:nth-child(3) .orb-ring:nth-child(2) { animation-delay: 0.65s; }
+        .thinking-orb:nth-child(3) .orb-ring:nth-child(3) { animation-delay: 1.0s; }
 
         @keyframes orbPulse {
             0%, 100% { transform: scale(0.85); }
-            50% { transform: scale(1.2); }
+            50% { transform: scale(1.25); }
         }
 
         @keyframes ringExpand {
-            0%   { transform: scale(0.4); opacity: 0.7; }
-            100% { transform: scale(2.4); opacity: 0; }
+            0%   { transform: scale(0.3); opacity: 0.8; }
+            100% { transform: scale(2.6); opacity: 0; }
         }
 
         .thinking-text {
@@ -93,19 +102,14 @@
             font-weight: 500;
         }
 
-        /* Reflecting phase - soft teal pastels */
-        .reflecting .orb-core {
-            background: #14b8a6;
-            box-shadow: 0 0 0 4px rgba(20,184,166,0.25),
-                        0 0 12px rgba(20,184,166,0.7);
-        }
-        .reflecting .orb-ring { border-color: #14b8a6; }
+        /* Reflecting phase - same pastel variety */
+        .reflecting .orb-core { box-shadow: 0 0 0 3px rgba(20,184,166,0.3), 0 0 10px rgba(20,184,166,0.8); }
 
-        /* Text fix */
+        /* Strong text wrapping fix */
         .ai-text {
             white-space: pre-wrap;
             word-break: break-word;
-            line-height: 1.5;
+            line-height: 1.55;
         }
 
         /* Upload zone */
@@ -203,22 +207,22 @@
                 aiDiv.innerHTML = `
                     <div class="thinking-container">
                         <div class="multi-orbs">
-                            <div class="thinking-orb">
-                                <div class="orb-ring w-[28px] h-[28px]"></div>
-                                <div class="orb-ring w-[28px] h-[28px]"></div>
-                                <div class="orb-ring w-[28px] h-[28px]"></div>
+                            <div class="thinking-orb orb-1">
+                                <div class="orb-ring w-[24px] h-[24px]"></div>
+                                <div class="orb-ring w-[24px] h-[24px]"></div>
+                                <div class="orb-ring w-[24px] h-[24px]"></div>
                                 <div class="orb-core"></div>
                             </div>
-                            <div class="thinking-orb">
-                                <div class="orb-ring w-[28px] h-[28px]"></div>
-                                <div class="orb-ring w-[28px] h-[28px]"></div>
-                                <div class="orb-ring w-[28px] h-[28px]"></div>
+                            <div class="thinking-orb orb-2">
+                                <div class="orb-ring w-[24px] h-[24px]"></div>
+                                <div class="orb-ring w-[24px] h-[24px]"></div>
+                                <div class="orb-ring w-[24px] h-[24px]"></div>
                                 <div class="orb-core"></div>
                             </div>
-                            <div class="thinking-orb">
-                                <div class="orb-ring w-[28px] h-[28px]"></div>
-                                <div class="orb-ring w-[28px] h-[28px]"></div>
-                                <div class="orb-ring w-[28px] h-[28px]"></div>
+                            <div class="thinking-orb orb-3">
+                                <div class="orb-ring w-[24px] h-[24px]"></div>
+                                <div class="orb-ring w-[24px] h-[24px]"></div>
+                                <div class="orb-ring w-[24px] h-[24px]"></div>
                                 <div class="orb-core"></div>
                             </div>
                         </div>
@@ -229,22 +233,22 @@
                 aiDiv.innerHTML = `
                     <div class="thinking-container reflecting">
                         <div class="multi-orbs">
-                            <div class="thinking-orb">
-                                <div class="orb-ring w-[28px] h-[28px]"></div>
-                                <div class="orb-ring w-[28px] h-[28px]"></div>
-                                <div class="orb-ring w-[28px] h-[28px]"></div>
+                            <div class="thinking-orb orb-1">
+                                <div class="orb-ring w-[24px] h-[24px]"></div>
+                                <div class="orb-ring w-[24px] h-[24px]"></div>
+                                <div class="orb-ring w-[24px] h-[24px]"></div>
                                 <div class="orb-core"></div>
                             </div>
-                            <div class="thinking-orb">
-                                <div class="orb-ring w-[28px] h-[28px]"></div>
-                                <div class="orb-ring w-[28px] h-[28px]"></div>
-                                <div class="orb-ring w-[28px] h-[28px]"></div>
+                            <div class="thinking-orb orb-2">
+                                <div class="orb-ring w-[24px] h-[24px]"></div>
+                                <div class="orb-ring w-[24px] h-[24px]"></div>
+                                <div class="orb-ring w-[24px] h-[24px]"></div>
                                 <div class="orb-core"></div>
                             </div>
-                            <div class="thinking-orb">
-                                <div class="orb-ring w-[28px] h-[28px]"></div>
-                                <div class="orb-ring w-[28px] h-[28px]"></div>
-                                <div class="orb-ring w-[28px] h-[28px]"></div>
+                            <div class="thinking-orb orb-3">
+                                <div class="orb-ring w-[24px] h-[24px]"></div>
+                                <div class="orb-ring w-[24px] h-[24px]"></div>
+                                <div class="orb-ring w-[24px] h-[24px]"></div>
                                 <div class="orb-core"></div>
                             </div>
                         </div>
@@ -319,7 +323,7 @@
             }
         }
 
-        // Upload & sidebar functions (unchanged)
+        // Upload & sidebar functions
         function initUpload() {
             const zone = document.getElementById('upload-zone');
             const fileInput = document.getElementById('fileInput');
@@ -391,7 +395,7 @@
             input.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') sendMessage();
             });
-            console.log('%c✅ Multiple beautiful orb + expanding rings restored', 'color:#22d3ee;font-weight:bold');
+            console.log('%c✅ Multiple smaller pastel orbs + fixed text streaming', 'color:#22d3ee;font-weight:bold');
         };
     </script>
 </body>
