@@ -19,7 +19,6 @@
             color: #111827;
         }
 
-        /* Grok-style white UI */
         .main-container {
             background: #f8fafc;
             min-height: 100vh;
@@ -45,86 +44,90 @@
             height: calc(100vh - 180px);
         }
 
-        /* Chat bubbles - Grok clean style */
+        /* Chat bubbles - Grok clean white */
         .chat-bubble-user {
             background: #3b82f6;
             color: white;
             border-radius: 22px 22px 8px 22px;
             box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+            max-width: 78%;
         }
         
         .chat-bubble-ai {
-            background: #ffffff;
+            background: #f8fafc;
             color: #111827;
             border: 1px solid #e5e7eb;
             border-radius: 22px 22px 22px 8px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            max-width: 78%;
         }
 
-        /* === MULTI-COLOR ORBS - Grok-style vibrant agents thinking (exactly what you wanted) === */
+        /* === SMALLER MULTI-COLOR ORBS - Grok-style, now seamless on white UI === */
         .multi-orbs {
             display: flex;
-            gap: 14px;
+            gap: 9px;
         }
 
         .thinking-orb {
             position: relative;
-            width: 26px;
-            height: 26px;
+            width: 22px;
+            height: 22px;
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
         .orb-core {
-            width: 10px;
-            height: 10px;
+            width: 8px;
+            height: 8px;
             border-radius: 9999px;
-            animation: orbPulse 1.8s ease-in-out infinite;
-            box-shadow: 0 0 0 4px rgba(255,255,255,0.3),
-                        0 0 14px currentColor;
+            animation: orbPulse 1.6s ease-in-out infinite;
+            box-shadow: 0 0 0 3px rgba(248, 250, 252, 0.6),
+                        0 0 10px currentColor;
         }
 
         .orb-ring {
             position: absolute;
-            border: 2.5px solid currentColor;
+            border: 2px solid currentColor;
             border-radius: 9999px;
-            animation: ringExpand 2.2s ease-out infinite;
-            opacity: 0.7;
+            animation: ringExpand 2s ease-out infinite;
+            opacity: 0.6;
         }
 
-        /* Vibrant Grok-agent colors */
+        /* Vibrant colors - exactly as you wanted */
         .orb-1 .orb-core, .orb-1 .orb-ring { background: #3b82f6; color: #3b82f6; }   /* Blue */
         .orb-2 .orb-core, .orb-2 .orb-ring { background: #22d3ee; color: #22d3ee; }   /* Cyan */
         .orb-3 .orb-core, .orb-3 .orb-ring { background: #a855f7; color: #a855f7; }   /* Purple */
 
+        /* Tighter staggered delays for smoother feel */
         .thinking-orb:nth-child(1) .orb-ring { animation-delay: 0s; }
-        .thinking-orb:nth-child(1) .orb-ring:nth-child(2) { animation-delay: 0.3s; }
-        .thinking-orb:nth-child(1) .orb-ring:nth-child(3) { animation-delay: 0.65s; }
+        .thinking-orb:nth-child(1) .orb-ring:nth-child(2) { animation-delay: 0.25s; }
+        .thinking-orb:nth-child(1) .orb-ring:nth-child(3) { animation-delay: 0.55s; }
         .thinking-orb:nth-child(2) .orb-ring { animation-delay: 0.1s; }
-        .thinking-orb:nth-child(2) .orb-ring:nth-child(2) { animation-delay: 0.45s; }
-        .thinking-orb:nth-child(2) .orb-ring:nth-child(3) { animation-delay: 0.8s; }
-        .thinking-orb:nth-child(3) .orb-ring { animation-delay: 0.25s; }
-        .thinking-orb:nth-child(3) .orb-ring:nth-child(2) { animation-delay: 0.6s; }
-        .thinking-orb:nth-child(3) .orb-ring:nth-child(3) { animation-delay: 0.95s; }
+        .thinking-orb:nth-child(2) .orb-ring:nth-child(2) { animation-delay: 0.4s; }
+        .thinking-orb:nth-child(2) .orb-ring:nth-child(3) { animation-delay: 0.75s; }
+        .thinking-orb:nth-child(3) .orb-ring { animation-delay: 0.2s; }
+        .thinking-orb:nth-child(3) .orb-ring:nth-child(2) { animation-delay: 0.5s; }
+        .thinking-orb:nth-child(3) .orb-ring:nth-child(3) { animation-delay: 0.85s; }
 
-        @keyframes orbPulse { 0%, 100% { transform: scale(0.8); } 50% { transform: scale(1.35); } }
-        @keyframes ringExpand { 0% { transform: scale(0.2); opacity: 0.9; } 100% { transform: scale(2.8); opacity: 0; } }
+        @keyframes orbPulse { 0%, 100% { transform: scale(0.85); } 50% { transform: scale(1.25); } }
+        @keyframes ringExpand { 0% { transform: scale(0.35); opacity: 0.85; } 100% { transform: scale(2.4); opacity: 0; } }
 
         .thinking-text {
             font-size: 0.95rem;
-            color: #1e40af;
+            color: #334155;
             font-weight: 600;
-            letter-spacing: -0.02em;
         }
 
-        /* Horizontal text fix for agent responses */
-        .ai-text, .prose {
-            white-space: pre-wrap !important;
+        /* FIXED: AI text now wraps horizontally (no more vertical stacking) */
+        .ai-text {
+            white-space: pre-line !important;
             word-break: break-word !important;
             overflow-wrap: break-word !important;
-            line-height: 1.7 !important;
+            line-height: 1.65 !important;
             display: block !important;
+            width: 100% !important;
+            max-width: 100% !important;
         }
 
         /* Input bar */
@@ -141,6 +144,15 @@
         .upload-zone:hover {
             border-color: #3b82f6;
             background: #f1f5f9;
+        }
+
+        /* Scrollbar */
+        #chat::-webkit-scrollbar {
+            width: 6px;
+        }
+        #chat::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 20px;
         }
     </style>
 </head>
@@ -218,7 +230,6 @@
     </div>
 
     <script>
-        // Full JS with all your fixes (user messages visible + horizontal AI text)
         const chat = document.getElementById('chat');
         const input = document.getElementById('input');
         let currentSession = 'default';
@@ -229,12 +240,12 @@
             
             if (type === 'user') {
                 div.innerHTML = `
-                    <div class="chat-bubble-user px-7 py-4 max-w-[80%]">
+                    <div class="chat-bubble-user px-7 py-4">
                         <div class="ai-text">${text}</div>
                     </div>`;
             } else {
                 div.innerHTML = `
-                    <div class="chat-bubble-ai px-7 py-4 max-w-[80%]">
+                    <div class="chat-bubble-ai px-7 py-4">
                         <div class="ai-content"></div>
                     </div>`;
             }
@@ -254,21 +265,21 @@
                     <div class="flex items-center gap-5 py-1">
                         <div class="multi-orbs">
                             <div class="thinking-orb orb-1">
-                                <div class="orb-ring w-7 h-7"></div>
-                                <div class="orb-ring w-7 h-7"></div>
-                                <div class="orb-ring w-7 h-7"></div>
+                                <div class="orb-ring w-[22px] h-[22px]"></div>
+                                <div class="orb-ring w-[22px] h-[22px]"></div>
+                                <div class="orb-ring w-[22px] h-[22px]"></div>
                                 <div class="orb-core"></div>
                             </div>
                             <div class="thinking-orb orb-2">
-                                <div class="orb-ring w-7 h-7"></div>
-                                <div class="orb-ring w-7 h-7"></div>
-                                <div class="orb-ring w-7 h-7"></div>
+                                <div class="orb-ring w-[22px] h-[22px]"></div>
+                                <div class="orb-ring w-[22px] h-[22px]"></div>
+                                <div class="orb-ring w-[22px] h-[22px]"></div>
                                 <div class="orb-core"></div>
                             </div>
                             <div class="thinking-orb orb-3">
-                                <div class="orb-ring w-7 h-7"></div>
-                                <div class="orb-ring w-7 h-7"></div>
-                                <div class="orb-ring w-7 h-7"></div>
+                                <div class="orb-ring w-[22px] h-[22px]"></div>
+                                <div class="orb-ring w-[22px] h-[22px]"></div>
+                                <div class="orb-ring w-[22px] h-[22px]"></div>
                                 <div class="orb-core"></div>
                             </div>
                         </div>
@@ -283,11 +294,9 @@
             const message = input.value.trim();
             if (!message) return;
 
-            // Add user message (now guaranteed visible)
             addMessage(message, 'user');
             input.value = '';
 
-            // Create AI bubble with thinking orbs
             const aiBubble = addMessage('', 'ai');
             showThinkingAnimation(aiBubble, 'thinking');
 
@@ -305,6 +314,7 @@
                 while (true) {
                     const { value, done } = await reader.read();
                     if (done) break;
+
                     const chunk = decoder.decode(value);
                     const lines = chunk.split('\n');
                     for (const line of lines) {
@@ -314,14 +324,14 @@
                                 if (data.phase === 'reflecting') {
                                     showThinkingAnimation(aiBubble, 'reflecting');
                                 } else if (data.token) {
-                                    // Switch to final text mode
+                                    // Smooth async transition to final text
                                     if (!aiBubble.querySelector('.ai-text')) {
                                         showThinkingAnimation(aiBubble, 'final');
                                     }
                                     aiText += data.token;
                                     const textDiv = aiBubble.querySelector('.ai-text');
                                     if (textDiv) {
-                                        textDiv.innerHTML = aiText.replace(/\n/g, '<br>');
+                                        textDiv.textContent = aiText;   // textContent + CSS now forces clean horizontal wrapping
                                     }
                                     chat.scrollTop = chat.scrollHeight;
                                 }
@@ -334,7 +344,6 @@
             }
         }
 
-        // Upload & sidebar functions (unchanged from your repo)
         async function loadSidebar() {
             try {
                 const histRes = await fetch('/api/history');
@@ -365,11 +374,9 @@
             }
         }
 
-        // Init
         window.onload = () => {
             loadSidebar();
             
-            // Drag & drop upload
             const zone = document.getElementById('upload-zone');
             const fileInput = document.getElementById('fileInput');
             
@@ -384,7 +391,7 @@
                 if (e.target.files[0]) handleFile(e.target.files[0]);
             });
 
-            console.log('%c✅ Full Grok-style white UI + colorful orbs loaded successfully!', 'color:#3b82f6;font-weight:bold');
+            console.log('%c✅ Full Grok-style UI fixed: smaller seamless orbs + perfect horizontal text wrapping + smooth async streaming!', 'color:#3b82f6;font-weight:bold');
         };
 
         async function handleFile(file) {
