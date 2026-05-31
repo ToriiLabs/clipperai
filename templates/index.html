@@ -8,96 +8,43 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
-        
         body { font-family: 'Inter', system-ui, sans-serif; }
 
-        .chat-bubble-user {
-            background: #3b82f6;
-            color: white;
-            border-radius: 20px 20px 6px 20px;
-        }
-        
-        .chat-bubble-ai {
-            background: #374151;
-            color: #f3f4f6;
-            border-radius: 20px 20px 20px 6px;
-        }
+        .chat-bubble-user { background: #3b82f6; color: white; border-radius: 20px 20px 6px 20px; }
+        .chat-bubble-ai { background: #374151; color: #f3f4f6; border-radius: 20px 20px 20px 6px; }
 
-        /* === CLEAN HORIZONTAL ORBS + TEXT (inside the normal AI bubble) === */
         .thinking-container {
             padding: 12px 16px;
             display: flex;
             align-items: center;
             gap: 16px;
         }
+        .multi-orbs { display: flex; gap: 12px; }
+        .thinking-orb { position: relative; width: 24px; height: 24px; }
+        .orb-core { width: 9px; height: 9px; border-radius: 9999px; animation: orbPulse 1.8s ease-in-out infinite; box-shadow: 0 0 0 3px rgba(59,130,246,0.3), 0 0 10px rgba(59,130,246,0.8); }
+        .orb-ring { position: absolute; border: 2px solid; border-radius: 9999px; animation: ringExpand 2.2s ease-out infinite; opacity: 0.65; }
 
-        .multi-orbs {
-            display: flex;
-            gap: 12px;
-        }
-
-        .thinking-orb {
-            position: relative;
-            width: 24px;
-            height: 24px;
-        }
-
-        .orb-core {
-            width: 9px;
-            height: 9px;
-            border-radius: 9999px;
-            animation: orbPulse 1.8s ease-in-out infinite;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3),
-                        0 0 10px rgba(59, 130, 246, 0.8);
-        }
-
-        .orb-ring {
-            position: absolute;
-            border: 2px solid;
-            border-radius: 9999px;
-            animation: ringExpand 2.2s ease-out infinite;
-            opacity: 0.65;
-        }
-
-        .orb-1 .orb-core { background: #3b82f6; }
-        .orb-1 .orb-ring { border-color: #3b82f6; }
-        .orb-2 .orb-core { background: #22d3ee; }
-        .orb-2 .orb-ring { border-color: #22d3ee; }
-        .orb-3 .orb-core { background: #14b8a6; }
-        .orb-3 .orb-ring { border-color: #14b8a6; }
+        .orb-1 .orb-core { background: #3b82f6; } .orb-1 .orb-ring { border-color: #3b82f6; }
+        .orb-2 .orb-core { background: #22d3ee; } .orb-2 .orb-ring { border-color: #22d3ee; }
+        .orb-3 .orb-core { background: #14b8a6; } .orb-3 .orb-ring { border-color: #14b8a6; }
 
         .thinking-orb:nth-child(1) .orb-ring { animation-delay: 0s; }
         .thinking-orb:nth-child(1) .orb-ring:nth-child(2) { animation-delay: 0.35s; }
         .thinking-orb:nth-child(1) .orb-ring:nth-child(3) { animation-delay: 0.7s; }
-
         .thinking-orb:nth-child(2) .orb-ring { animation-delay: 0.15s; }
         .thinking-orb:nth-child(2) .orb-ring:nth-child(2) { animation-delay: 0.5s; }
         .thinking-orb:nth-child(2) .orb-ring:nth-child(3) { animation-delay: 0.85s; }
-
         .thinking-orb:nth-child(3) .orb-ring { animation-delay: 0.3s; }
         .thinking-orb:nth-child(3) .orb-ring:nth-child(2) { animation-delay: 0.65s; }
         .thinking-orb:nth-child(3) .orb-ring:nth-child(3) { animation-delay: 1.0s; }
 
-        @keyframes orbPulse {
-            0%, 100% { transform: scale(0.85); }
-            50% { transform: scale(1.25); }
-        }
+        @keyframes orbPulse { 0%, 100% { transform: scale(0.85); } 50% { transform: scale(1.25); } }
+        @keyframes ringExpand { 0% { transform: scale(0.3); opacity: 0.8; } 100% { transform: scale(2.6); opacity: 0; } }
 
-        @keyframes ringExpand {
-            0%   { transform: scale(0.3); opacity: 0.8; }
-            100% { transform: scale(2.6); opacity: 0; }
-        }
-
-        .thinking-text {
-            font-size: 0.9rem;
-            color: #60a5fa;
-            font-weight: 500;
-        }
-
+        .thinking-text { font-size: 0.9rem; color: #60a5fa; font-weight: 500; }
         .reflecting .orb-core { box-shadow: 0 0 0 3px rgba(20,184,166,0.3), 0 0 10px rgba(20,184,166,0.8); }
         .reflecting .thinking-text { color: #14b8a6; }
 
-        /* Text fix */
         .ai-text {
             white-space: pre-wrap !important;
             word-break: break-word !important;
@@ -105,19 +52,13 @@
             line-height: 1.65;
         }
 
-        .upload-zone {
-            border: 2px dashed #64748b;
-            transition: all 0.3s;
-        }
-        .upload-zone:hover {
-            border-color: #3b82f6;
-            background: #1e2937;
-        }
+        .upload-zone { border: 2px dashed #64748b; transition: all 0.3s; }
+        .upload-zone:hover { border-color: #3b82f6; background: #1e2937; }
     </style>
 </head>
 <body class="flex h-screen overflow-hidden bg-slate-950 text-gray-100">
 
-    <!-- Sidebar -->
+    <!-- Sidebar unchanged -->
     <div class="w-80 bg-gray-900 border-r border-gray-800 flex flex-col">
         <div class="p-5 border-b border-gray-800">
             <h1 class="text-3xl font-semibold tracking-tighter">ToriiLabs</h1>
@@ -125,8 +66,7 @@
         </div>
 
         <div onclick="newSession()" class="mx-4 mt-5 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl py-3.5 px-4 flex items-center justify-center gap-2 cursor-pointer text-sm font-medium">
-            <i class="fa-solid fa-plus"></i>
-            <span>New Conversation</span>
+            <i class="fa-solid fa-plus"></i><span>New Conversation</span>
         </div>
 
         <div class="px-5 pt-6 text-xs uppercase tracking-widest text-gray-400">Conversations</div>
@@ -147,8 +87,7 @@
 
         <div class="p-4 border-t border-gray-800">
             <button onclick="clearAll()" class="text-xs text-gray-400 hover:text-red-400 flex items-center gap-2">
-                <i class="fa-solid fa-trash-can"></i>
-                <span>Clear All (Chat + Vector DB)</span>
+                <i class="fa-solid fa-trash-can"></i><span>Clear All (Chat + Vector DB)</span>
             </button>
         </div>
     </div>
@@ -180,10 +119,7 @@
         function addMessage(text, type) {
             const div = document.createElement('div');
             div.className = `flex ${type === 'user' ? 'justify-end' : 'justify-start'} message`;
-            div.innerHTML = `
-                <div class="${type === 'user' ? 'chat-bubble-user' : 'chat-bubble-ai'} px-5 py-3.5 max-w-[80%]">
-                    ${text}
-                </div>`;
+            div.innerHTML = `<div class="${type === 'user' ? 'chat-bubble-user' : 'chat-bubble-ai'} px-5 py-3.5 max-w-[80%]"></div>`;
             chat.appendChild(div);
             chat.scrollTop = chat.scrollHeight;
             return div.querySelector('div:last-child');
@@ -201,8 +137,7 @@
                         </div>
                         <div class="thinking-text">${isReflecting ? 'Reflecting on documents...' : 'Torii Agents thinking'}</div>
                     </div>`;
-            } 
-            else if (phase === 'final') {
+            } else if (phase === 'final') {
                 aiBubble.innerHTML = `<div class="ai-text"></div>`;
             }
         }
@@ -223,8 +158,6 @@
                     body: JSON.stringify({ message })
                 });
 
-                if (!response.ok) throw new Error('Server error');
-
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder();
                 let buffer = '';
@@ -241,24 +174,16 @@
                     for (const line of lines) {
                         if (!line.startsWith('data: ')) continue;
 
-                        const jsonStr = line.slice(6).trim();
-                        if (!jsonStr) continue;
+                        const data = JSON.parse(line.slice(6).trim());
 
-                        try {
-                            const data = JSON.parse(jsonStr);
-
-                            if (data.phase) {
-                                showThinkingAnimation(aiBubble, data.phase);
-                            } 
-                            else if (data.token) {
-                                finalText += data.token + ' ';
-                                const contentDiv = aiBubble.querySelector('.ai-text');
-                                if (contentDiv) {
-                                    contentDiv.textContent = finalText;
-                                }
-                                chat.scrollTop = chat.scrollHeight;
-                            }
-                        } catch (e) {}
+                        if (data.phase) {
+                            showThinkingAnimation(aiBubble, data.phase);
+                        } else if (data.token) {
+                            finalText += data.token + ' ';
+                            const contentDiv = aiBubble.querySelector('.ai-text');
+                            if (contentDiv) contentDiv.textContent = finalText;
+                            chat.scrollTop = chat.scrollHeight;
+                        }
                     }
                 }
             } catch (error) {
@@ -267,6 +192,7 @@
             }
         }
 
+        // Upload and sidebar (unchanged)
         function initUpload() {
             const zone = document.getElementById('upload-zone');
             const fileInput = document.getElementById('fileInput');
@@ -313,16 +239,11 @@
                 const clipsRes = await fetch('/api/clips');
                 const clipsData = await clipsRes.json();
                 const cl = document.getElementById('clips-list');
-                if (cl) cl.innerHTML = clipsData.clips.map(c => 
-                    `<div class="bg-gray-800 p-3 rounded-2xl text-xs leading-snug">${c}</div>`
-                ).join('');
+                if (cl) cl.innerHTML = clipsData.clips.map(c => `<div class="bg-gray-800 p-3 rounded-2xl text-xs leading-snug">${c}</div>`).join('');
             } catch (e) {}
         }
 
-        function newSession() { 
-            chat.innerHTML = ''; 
-            document.getElementById('session-title').textContent = 'New Conversation • Vector RAG Active'; 
-        }
+        function newSession() { chat.innerHTML = ''; document.getElementById('session-title').textContent = 'New Conversation • Vector RAG Active'; }
 
         async function clearAll() { 
             if (confirm('Clear ALL chats + vector database?')) { 
@@ -335,10 +256,8 @@
         window.onload = () => {
             initUpload();
             loadSidebar();
-            input.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') sendMessage();
-            });
-            console.log('%c✅ Orbs + text inside bubble, horizontal', 'color:#22d3ee;font-weight:bold');
+            input.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
+            console.log('%c✅ Clean horizontal orbs + horizontal streaming', 'color:#22d3ee;font-weight:bold');
         };
     </script>
 </body>
