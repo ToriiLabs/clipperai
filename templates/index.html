@@ -64,7 +64,7 @@
             display: inline-block;
         }
 
-        /* === SMALLER MULTI-COLOR ORBS - seamless on white UI === */
+        /* === GROK-STYLE RANDOMIZED MULTI-COLOR ORBS (now includes yellow + orange) === */
         .multi-orbs {
             display: flex;
             gap: 9px;
@@ -95,20 +95,6 @@
             animation: ringExpand 2s ease-out infinite;
             opacity: 0.6;
         }
-
-        .orb-1 .orb-core, .orb-1 .orb-ring { background: #3b82f6; color: #3b82f6; }
-        .orb-2 .orb-core, .orb-2 .orb-ring { background: #22d3ee; color: #22d3ee; }
-        .orb-3 .orb-core, .orb-3 .orb-ring { background: #a855f7; color: #a855f7; }
-
-        .thinking-orb:nth-child(1) .orb-ring { animation-delay: 0s; }
-        .thinking-orb:nth-child(1) .orb-ring:nth-child(2) { animation-delay: 0.25s; }
-        .thinking-orb:nth-child(1) .orb-ring:nth-child(3) { animation-delay: 0.55s; }
-        .thinking-orb:nth-child(2) .orb-ring { animation-delay: 0.1s; }
-        .thinking-orb:nth-child(2) .orb-ring:nth-child(2) { animation-delay: 0.4s; }
-        .thinking-orb:nth-child(2) .orb-ring:nth-child(3) { animation-delay: 0.75s; }
-        .thinking-orb:nth-child(3) .orb-ring { animation-delay: 0.2s; }
-        .thinking-orb:nth-child(3) .orb-ring:nth-child(2) { animation-delay: 0.5s; }
-        .thinking-orb:nth-child(3) .orb-ring:nth-child(3) { animation-delay: 0.85s; }
 
         @keyframes orbPulse { 0%, 100% { transform: scale(0.85); } 50% { transform: scale(1.25); } }
         @keyframes ringExpand { 0% { transform: scale(0.35); opacity: 0.85; } 100% { transform: scale(2.4); opacity: 0; } }
@@ -239,6 +225,13 @@
         const input = document.getElementById('input');
         let currentSession = 'default';
 
+        // Vibrant Grok-style color palette (blue, cyan, purple, yellow, orange)
+        const ORB_COLORS = ['#3b82f6', '#22d3ee', '#a855f7', '#facc15', '#fb923c'];
+
+        function getRandomOrbColors() {
+            return [...ORB_COLORS].sort(() => Math.random() - 0.5).slice(0, 3);
+        }
+
         function addMessage(text, type) {
             const div = document.createElement('div');
             div.className = `flex ${type === 'user' ? 'justify-end' : 'justify-start'} message`;
@@ -266,22 +259,24 @@
 
             if (phase === 'thinking' || phase === 'reflecting') {
                 const isReflecting = phase === 'reflecting';
+                const colors = getRandomOrbColors(); // randomize every time like Grok
+
                 content.innerHTML = `
                     <div class="flex items-center gap-5 py-1">
                         <div class="multi-orbs">
-                            <div class="thinking-orb orb-1">
+                            <div class="thinking-orb orb-1" style="color: ${colors[0]}">
                                 <div class="orb-ring w-[22px] h-[22px]"></div>
                                 <div class="orb-ring w-[22px] h-[22px]"></div>
                                 <div class="orb-ring w-[22px] h-[22px]"></div>
                                 <div class="orb-core"></div>
                             </div>
-                            <div class="thinking-orb orb-2">
+                            <div class="thinking-orb orb-2" style="color: ${colors[1]}">
                                 <div class="orb-ring w-[22px] h-[22px]"></div>
                                 <div class="orb-ring w-[22px] h-[22px]"></div>
                                 <div class="orb-ring w-[22px] h-[22px]"></div>
                                 <div class="orb-core"></div>
                             </div>
-                            <div class="thinking-orb orb-3">
+                            <div class="thinking-orb orb-3" style="color: ${colors[2]}">
                                 <div class="orb-ring w-[22px] h-[22px]"></div>
                                 <div class="orb-ring w-[22px] h-[22px]"></div>
                                 <div class="orb-ring w-[22px] h-[22px]"></div>
@@ -315,6 +310,7 @@
                 const reader = res.body.getReader();
                 const decoder = new TextDecoder();
                 let aiText = '';
+                let firstToken = true;
 
                 while (true) {
                     const { value, done } = await reader.read();
@@ -329,8 +325,11 @@
                                 if (data.phase === 'reflecting') {
                                     showThinkingAnimation(aiBubble, 'reflecting');
                                 } else if (data.token) {
-                                    if (!aiBubble.querySelector('.ai-text')) {
+                                    if (firstToken) {
+                                        firstToken = false;
                                         showThinkingAnimation(aiBubble, 'final');
+                                        // Smoother transition: small pause before text starts appearing
+                                        await new Promise(resolve => setTimeout(resolve, 650));
                                     }
                                     aiText += data.token;
                                     const textDiv = aiBubble.querySelector('.ai-text');
@@ -338,8 +337,8 @@
                                         textDiv.textContent = aiText;
                                         chat.scrollTop = chat.scrollHeight;
                                     }
-                                    // SLOWED DOWN STREAMING - typewriter effect (25ms per token feels natural)
-                                    await new Promise(resolve => setTimeout(resolve, 25));
+                                    // SLOWER typewriter effect (45ms per token - much more natural)
+                                    await new Promise(resolve => setTimeout(resolve, 45));
                                 }
                             } catch (e) {}
                         }
@@ -397,7 +396,7 @@
                 if (e.target.files[0]) handleFile(e.target.files[0]);
             });
 
-            console.log('%c✅ Streaming slowed down - now has beautiful typewriter effect!', 'color:#3b82f6;font-weight:bold');
+            console.log('%c✅ Slower streaming + smooth transition + randomized colorful orbs loaded!', 'color:#3b82f6;font-weight:bold');
         };
 
         async function handleFile(file) {
