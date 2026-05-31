@@ -9,7 +9,9 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
         
-        :root { --grok-blue: #3b82f6; }
+        :root {
+            --grok-blue: #3b82f6;
+        }
 
         body {
             font-family: 'Inter', system-ui, sans-serif;
@@ -17,57 +19,140 @@
             color: #111827;
         }
 
-        .main-container { background: #f8fafc; min-height: 100vh; }
-        .sidebar { background: #ffffff; border-right: 1px solid #e2e8f0; box-shadow: 2px 0 12px rgba(0, 0, 0, 0.04); }
-        .chat-container { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 24px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.06); }
+        .main-container {
+            background: #f8fafc;
+            min-height: 100vh;
+        }
 
-        #chat { background: #ffffff; padding: 28px; overflow-y: auto; height: calc(100vh - 180px); }
+        .sidebar {
+            background: #ffffff;
+            border-right: 1px solid #e2e8f0;
+            box-shadow: 2px 0 12px rgba(0, 0, 0, 0.04);
+        }
 
+        .chat-container {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 24px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.06);
+        }
+
+        #chat {
+            background: #ffffff;
+            padding: 28px;
+            overflow-y: auto;
+            height: calc(100vh - 180px);
+        }
+
+        /* Chat bubbles */
         .chat-bubble-user {
-            background: #3b82f6; color: white; border-radius: 22px 22px 8px 22px;
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25); max-width: 78%; display: inline-block;
+            background: #3b82f6;
+            color: white;
+            border-radius: 22px 22px 8px 22px;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+            max-width: 78%;
+            display: inline-block;
         }
+        
         .chat-bubble-ai {
-            background: #f8fafc; color: #111827; border: 1px solid #e5e7eb;
-            border-radius: 22px 22px 22px 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-            max-width: 78%; display: inline-block;
+            background: #f8fafc;
+            color: #111827;
+            border: 1px solid #e5e7eb;
+            border-radius: 22px 22px 22px 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            max-width: 78%;
+            display: inline-block;
         }
 
-        /* Grok-style randomized colorful orbs */
-        .multi-orbs { display: flex; gap: 9px; }
+        /* GROK-STYLE RANDOMIZED MULTI-COLOR ORBS */
+        .multi-orbs {
+            display: flex;
+            gap: 9px;
+        }
+
         .thinking-orb {
-            position: relative; width: 22px; height: 22px;
-            display: flex; align-items: center; justify-content: center;
+            position: relative;
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
+
         .orb-core {
-            width: 8px; height: 8px; border-radius: 9999px;
+            width: 8px;
+            height: 8px;
+            border-radius: 9999px;
             animation: orbPulse 1.6s ease-in-out infinite;
-            box-shadow: 0 0 0 3px rgba(248, 250, 252, 0.6), 0 0 10px currentColor;
+            box-shadow: 0 0 0 3px rgba(248, 250, 252, 0.6),
+                        0 0 10px currentColor;
         }
+
         .orb-ring {
-            position: absolute; border: 2px solid currentColor;
-            border-radius: 9999px; animation: ringExpand 2s ease-out infinite; opacity: 0.6;
+            position: absolute;
+            border: 2px solid currentColor;
+            border-radius: 9999px;
+            animation: ringExpand 2s ease-out infinite;
+            opacity: 0.6;
         }
+
         @keyframes orbPulse { 0%, 100% { transform: scale(0.85); } 50% { transform: scale(1.25); } }
         @keyframes ringExpand { 0% { transform: scale(0.35); opacity: 0.85; } 100% { transform: scale(2.4); opacity: 0; } }
 
-        .thinking-text { font-size: 0.95rem; color: #334155; font-weight: 600; }
-
-        /* Solid text wrapping */
-        .ai-text {
-            white-space: normal !important; word-break: break-word !important;
-            overflow-wrap: break-word !important; word-wrap: break-word !important;
-            line-height: 1.65 !important; display: block !important; width: 100% !important;
+        .thinking-text {
+            font-size: 0.95rem;
+            color: #334155;
+            font-weight: 600;
         }
 
-        .input-bar { background: #ffffff; border-top: 1px solid #e5e7eb; box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.04); }
-        .upload-zone { border: 2px dashed #64748b; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        .upload-zone:hover { border-color: #3b82f6; background: #f1f5f9; }
+        /* AI text - rock-solid horizontal wrapping */
+        .ai-text {
+            white-space: normal !important;
+            word-break: break-word !important;
+            overflow-wrap: break-word !important;
+            word-wrap: break-word !important;
+            hyphens: auto !important;
+            line-height: 1.65 !important;
+            display: block !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            padding: 0;
+            margin: 0;
+        }
+
+        .chat-bubble-ai .ai-content,
+        .chat-bubble-ai .ai-text {
+            width: 100% !important;
+        }
+
+        /* Input bar */
+        .input-bar {
+            background: #ffffff;
+            border-top: 1px solid #e5e7eb;
+            box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.04);
+        }
+
+        .upload-zone {
+            border: 2px dashed #64748b;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .upload-zone:hover {
+            border-color: #3b82f6;
+            background: #f1f5f9;
+        }
+
+        #chat::-webkit-scrollbar {
+            width: 6px;
+        }
+        #chat::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 20px;
+        }
     </style>
 </head>
 <body class="flex h-screen overflow-hidden main-container">
 
-    <!-- Sidebar (unchanged) -->
+    <!-- Sidebar -->
     <div class="w-80 sidebar flex flex-col border-r">
         <div class="p-6 border-b">
             <h1 class="text-3xl font-semibold tracking-tighter text-gray-900">ToriiLabs</h1>
@@ -75,7 +160,8 @@
         </div>
 
         <div onclick="newSession()" class="mx-4 mt-6 bg-blue-600 hover:bg-blue-700 transition-colors text-white rounded-3xl py-4 px-5 flex items-center justify-center gap-3 cursor-pointer text-base font-medium shadow-sm">
-            <i class="fa-solid fa-plus"></i><span>New Conversation</span>
+            <i class="fa-solid fa-plus"></i>
+            <span>New Conversation</span>
         </div>
 
         <div class="px-6 pt-8 text-xs uppercase tracking-widest text-gray-500 font-medium">Conversations</div>
@@ -96,7 +182,8 @@
 
         <div class="p-6 border-t text-xs">
             <button onclick="clearAll()" class="flex items-center gap-2 text-gray-400 hover:text-red-500 transition-colors">
-                <i class="fa-solid fa-trash-can"></i><span>Clear All (Chat + Vector DB)</span>
+                <i class="fa-solid fa-trash-can"></i>
+                <span>Clear All (Chat + Vector DB)</span>
             </button>
         </div>
     </div>
@@ -107,7 +194,8 @@
             <span id="session-title" class="font-semibold text-xl text-gray-900">New Conversation • Vector RAG Active</span>
             <div class="flex-1"></div>
             <button onclick="loadSidebar()" class="px-5 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-2xl flex items-center gap-2">
-                <i class="fa-solid fa-rotate"></i> Refresh Clips
+                <i class="fa-solid fa-rotate"></i>
+                Refresh Clips
             </button>
         </div>
 
@@ -116,10 +204,14 @@
         <div class="input-bar p-6">
             <div class="max-w-4xl mx-auto">
                 <div class="flex gap-3 bg-white rounded-3xl border border-gray-200 shadow-inner p-2">
-                    <input id="input" type="text" placeholder="Ask ClipperAI anything..."
-                           class="flex-1 bg-transparent outline-none px-6 text-lg placeholder:text-gray-400"
-                           onkeypress="if(event.key === 'Enter') sendMessage()">
-                    <button onclick="sendMessage()" class="w-12 h-12 bg-blue-600 hover:bg-blue-700 rounded-3xl text-white flex items-center justify-center transition-colors">
+                    <input 
+                        id="input" 
+                        type="text" 
+                        placeholder="Ask ClipperAI anything..."
+                        class="flex-1 bg-transparent outline-none px-6 text-lg placeholder:text-gray-400"
+                        onkeypress="if(event.key === 'Enter') sendMessage()">
+                    <button onclick="sendMessage()" 
+                            class="w-12 h-12 bg-blue-600 hover:bg-blue-700 rounded-3xl text-white flex items-center justify-center transition-colors">
                         <i class="fa-solid fa-paper-plane"></i>
                     </button>
                 </div>
@@ -129,81 +221,206 @@
     </div>
 
     <script>
-        // ... (all previous functions: addMessage, showThinkingAnimation, sendMessage, loadSidebar, newSession, clearAll remain exactly the same as last version)
-
         const chat = document.getElementById('chat');
         const input = document.getElementById('input');
+        let currentSession = 'default';
 
-        // Vibrant randomized orbs (kept from last version)
         const ORB_COLORS = ['#3b82f6', '#22d3ee', '#a855f7', '#facc15', '#fb923c'];
-        function getRandomOrbColors() { return [...ORB_COLORS].sort(() => Math.random() - 0.5).slice(0, 3); }
 
-        function addMessage(text, type) { /* unchanged from previous */ }
-        function showThinkingAnimation(aiBubble, phase) { /* unchanged from previous */ }
+        function getRandomOrbColors() {
+            return [...ORB_COLORS].sort(() => Math.random() - 0.5).slice(0, 3);
+        }
 
-        async function sendMessage() { /* unchanged from previous - 45ms typewriter + smooth transition */ }
+        function addMessage(text, type) {
+            const div = document.createElement('div');
+            div.className = `flex ${type === 'user' ? 'justify-end' : 'justify-start'} message`;
+            
+            if (type === 'user') {
+                div.innerHTML = `
+                    <div class="chat-bubble-user px-7 py-4">
+                        <div class="ai-text">${text}</div>
+                    </div>`;
+            } else {
+                div.innerHTML = `
+                    <div class="chat-bubble-ai px-7 py-4">
+                        <div class="ai-content"></div>
+                    </div>`;
+            }
+            
+            chat.appendChild(div);
+            chat.scrollTop = chat.scrollHeight;
+            return div.querySelector(type === 'user' ? '.chat-bubble-user' : '.chat-bubble-ai');
+        }
 
-        // === IMPROVED UPLOAD with detailed error reporting ===
+        function showThinkingAnimation(aiBubble, phase) {
+            const content = aiBubble.querySelector('.ai-content');
+            if (!content) return;
+
+            if (phase === 'thinking' || phase === 'reflecting') {
+                const isReflecting = phase === 'reflecting';
+                const colors = getRandomOrbColors();
+
+                content.innerHTML = `
+                    <div class="flex items-center gap-5 py-1">
+                        <div class="multi-orbs">
+                            <div class="thinking-orb orb-1" style="color: ${colors[0]}">
+                                <div class="orb-ring w-[22px] h-[22px]"></div>
+                                <div class="orb-ring w-[22px] h-[22px]"></div>
+                                <div class="orb-ring w-[22px] h-[22px]"></div>
+                                <div class="orb-core"></div>
+                            </div>
+                            <div class="thinking-orb orb-2" style="color: ${colors[1]}">
+                                <div class="orb-ring w-[22px] h-[22px]"></div>
+                                <div class="orb-ring w-[22px] h-[22px]"></div>
+                                <div class="orb-ring w-[22px] h-[22px]"></div>
+                                <div class="orb-core"></div>
+                            </div>
+                            <div class="thinking-orb orb-3" style="color: ${colors[2]}">
+                                <div class="orb-ring w-[22px] h-[22px]"></div>
+                                <div class="orb-ring w-[22px] h-[22px]"></div>
+                                <div class="orb-ring w-[22px] h-[22px]"></div>
+                                <div class="orb-core"></div>
+                            </div>
+                        </div>
+                        <div class="thinking-text">${isReflecting ? 'Reflecting on your documents...' : 'Torii Agents thinking...'}</div>
+                    </div>`;
+            } else if (phase === 'final') {
+                content.innerHTML = `<div class="ai-text"></div>`;
+            }
+        }
+
+        async function sendMessage() {
+            const message = input.value.trim();
+            if (!message) return;
+
+            addMessage(message, 'user');
+            input.value = '';
+
+            const aiBubble = addMessage('', 'ai');
+            showThinkingAnimation(aiBubble, 'thinking');
+
+            try {
+                const res = await fetch('/api/stream', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message })
+                });
+
+                const reader = res.body.getReader();
+                const decoder = new TextDecoder();
+                let aiText = '';
+                let firstToken = true;
+
+                while (true) {
+                    const { value, done } = await reader.read();
+                    if (done) break;
+
+                    const chunk = decoder.decode(value);
+                    const lines = chunk.split('\n');
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            try {
+                                const data = JSON.parse(line.slice(6));
+                                if (data.phase === 'reflecting') {
+                                    showThinkingAnimation(aiBubble, 'reflecting');
+                                } else if (data.token) {
+                                    if (firstToken) {
+                                        firstToken = false;
+                                        showThinkingAnimation(aiBubble, 'final');
+                                        await new Promise(resolve => setTimeout(resolve, 650));
+                                    }
+                                    aiText += data.token;
+                                    const textDiv = aiBubble.querySelector('.ai-text');
+                                    if (textDiv) {
+                                        textDiv.textContent = aiText;
+                                        chat.scrollTop = chat.scrollHeight;
+                                    }
+                                    await new Promise(resolve => setTimeout(resolve, 45));
+                                }
+                            } catch (e) {}
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        // Improved upload with real error messages
         async function handleFile(file) {
             const formData = new FormData();
             formData.append('file', file);
-
             const status = document.createElement('div');
             status.className = "text-xs mt-4 px-4 py-2 rounded-2xl bg-blue-50 text-blue-700";
             status.textContent = `Uploading ${file.name}...`;
             document.getElementById('upload-zone').appendChild(status);
 
             try {
-                const res = await fetch('/api/upload', {
-                    method: 'POST',
-                    body: formData
-                });
-
+                const res = await fetch('/api/upload', { method: 'POST', body: formData });
                 if (!res.ok) {
-                    let errorMsg = `Upload failed (${res.status})`;
-                    try {
-                        const errorData = await res.json();
-                        errorMsg = errorData.error || errorData.message || errorMsg;
-                    } catch (_) {
-                        const text = await res.text();
-                        if (text) errorMsg = text.substring(0, 120);
-                    }
-                    throw new Error(errorMsg);
+                    const errorData = await res.json().catch(() => ({}));
+                    throw new Error(errorData.error || errorData.message || `Upload failed (${res.status})`);
                 }
-
                 const data = await res.json();
                 status.className = "text-xs mt-4 px-4 py-2 rounded-2xl bg-green-50 text-green-700";
                 status.textContent = data.message || "✅ Added to vector memory!";
                 loadSidebar();
             } catch (err) {
-                console.error("Upload error:", err);
+                console.error(err);
                 status.className = "text-xs mt-4 px-4 py-2 rounded-2xl bg-red-50 text-red-700";
-                status.innerHTML = `❌ ${err.message}<br><span class="text-[10px]">Check server console for details</span>`;
+                status.innerHTML = `❌ ${err.message}<br><small>Check terminal for details</small>`;
             }
         }
 
-        // Rest of init code (drag & drop, etc.)
+        async function loadSidebar() {
+            try {
+                const histRes = await fetch('/api/history');
+                const hist = await histRes.json();
+                document.getElementById('history-list').innerHTML = hist.sessions.map(s => 
+                    `<div class="px-4 py-3 hover:bg-slate-100 rounded-2xl cursor-pointer">${s}</div>`
+                ).join('');
+
+                const clipsRes = await fetch('/api/clips');
+                const clipsData = await clipsRes.json();
+                document.getElementById('clips-list').innerHTML = clipsData.clips.map(c => 
+                    `<div class="bg-slate-50 p-4 rounded-3xl text-xs">${c}</div>`
+                ).join('');
+            } catch(e) {}
+        }
+
+        function newSession() {
+            chat.innerHTML = '';
+            currentSession = Date.now().toString();
+            document.getElementById('session-title').textContent = 'New Conversation • Vector RAG Active';
+        }
+
+        async function clearAll() {
+            if (confirm('Clear ALL chats and the vector database?')) {
+                await fetch('/api/clear', { method: 'POST' });
+                loadSidebar();
+                chat.innerHTML = '';
+            }
+        }
+
         window.onload = () => {
             loadSidebar();
+            
             const zone = document.getElementById('upload-zone');
             const fileInput = document.getElementById('fileInput');
             
             zone.addEventListener('dragover', e => { e.preventDefault(); zone.style.background = '#f0f9ff'; });
             zone.addEventListener('dragleave', () => zone.style.background = '');
             zone.addEventListener('drop', e => {
-                e.preventDefault(); zone.style.background = '';
+                e.preventDefault();
+                zone.style.background = '';
                 if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
             });
             fileInput.addEventListener('change', e => {
                 if (e.target.files[0]) handleFile(e.target.files[0]);
             });
 
-            console.log('%c✅ Upload error reporting improved + all previous fixes active!', 'color:#3b82f6;font-weight:bold');
+            console.log('%c✅ Your favorite working version restored!', 'color:#3b82f6;font-weight:bold');
         };
-
-        async function loadSidebar() { /* unchanged */ }
-        function newSession() { /* unchanged */ }
-        async function clearAll() { /* unchanged */ }
     </script>
 </body>
 </html>
