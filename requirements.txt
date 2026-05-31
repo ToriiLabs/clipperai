@@ -14,3 +14,4 @@ langchain-core
 accelerate
 ollama
 langchain-ollama
+python-docx
