@@ -3,79 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ToriiLabs</title>
+    <title>ToriiLabs • ClipperAI</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;display=swap');
-        
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
         body { font-family: 'Inter', system-ui, sans-serif; }
-
-        .chat-bubble-user {
-            background: #3b82f6;
-            color: white;
-            border-radius: 20px 20px 6px 20px;
-        }
-        
-        .chat-bubble-ai {
-            background: #374151;
-            color: #f3f4f6;
-            border-radius: 20px 20px 20px 6px;
-        }
-
-        /* === 32px GROK-STYLE THINKING ORB === */
-        .thinking-container {
-            padding: 8px 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .thinking-orb {
-            position: relative;
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .orb-core {
-            width: 12px;
-            height: 12px;
-            background: #3b82f6;
-            border-radius: 9999px;
-            animation: orbPulse 1.8s ease-in-out infinite;
-            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2),
-                        0 0 12px rgba(59, 130, 246, 0.6);
-        }
-
-        .orb-ring {
-            position: absolute;
-            border: 1.5px solid #3b82f6;
-            border-radius: 9999px;
-            animation: ringExpand 2s ease-out infinite;
-            opacity: 0.5;
-        }
-        .orb-ring:nth-child(2) { animation-delay: 0.5s; border-color: #22d3ee; }
-        .orb-ring:nth-child(3) { animation-delay: 1s; border-color: #67e8f9; }
-
-        @keyframes orbPulse {
-            0%, 100% { transform: scale(0.9); }
-            50% { transform: scale(1.15); }
-        }
-
-        @keyframes ringExpand {
-            0% { transform: scale(0.6); opacity: 0.6; }
-            100% { transform: scale(2.1); opacity: 0; }
-        }
-
-        .thinking-text {
-            font-size: 0.8rem;
-            color: #60a5fa;
-            font-weight: 500;
-        }
+        .chat-bubble-user { background: #3b82f6; color: white; border-radius: 20px 20px 6px 20px; }
+        .chat-bubble-ai { background: #374151; color: #f3f4f6; border-radius: 20px 20px 20px 6px; }
+        .upload-zone { border: 2px dashed #64748b; transition: all 0.3s; }
+        .upload-zone:hover { border-color: #3b82f6; background: #1e2937; }
     </style>
 </head>
 <body class="flex h-screen overflow-hidden bg-slate-950 text-gray-100">
@@ -84,6 +21,7 @@
     <div class="w-80 bg-gray-900 border-r border-gray-800 flex flex-col">
         <div class="p-5 border-b border-gray-800">
             <h1 class="text-3xl font-semibold tracking-tighter">ToriiLabs</h1>
+            <p class="text-xs text-emerald-400">ClipperAI • Vector RAG Ready</p>
         </div>
 
         <div onclick="newSession()" 
@@ -95,13 +33,27 @@
         <div class="px-5 pt-6 text-xs uppercase tracking-widest text-gray-400">Conversations</div>
         <div id="history-list" class="flex-1 overflow-y-auto px-4 space-y-1 text-sm"></div>
 
-        <div class="px-5 pt-4 text-xs uppercase tracking-widest text-gray-400">Memory</div>
+        <div class="px-5 pt-4 text-xs uppercase tracking-widest text-gray-400">Memory + Documents</div>
         <div id="clips-list" class="flex-1 overflow-y-auto px-4 space-y-2 text-sm"></div>
+
+        <!-- === FULL UPLOAD ZONE (6) === -->
+        <div class="px-5 py-3">
+            <div id="upload-zone" class="upload-zone rounded-xl p-6 text-center cursor-pointer">
+                <p class="text-lg mb-2">📄 Drop PDF • Word • TXT • MD</p>
+                <p class="text-xs text-gray-400 mb-3">Your files go straight into the vector database</p>
+                <input type="file" id="fileInput" accept=".pdf,.docx,.txt,.md" class="hidden">
+                <button onclick="document.getElementById('fileInput').click()" 
+                        class="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg text-sm">
+                    📂 Select file
+                </button>
+                <div class="text-[10px] mt-3 text-gray-500">or drag & drop anywhere on sidebar</div>
+            </div>
+        </div>
 
         <div class="p-4 border-t border-gray-800">
             <button onclick="clearAll()" class="text-xs text-gray-400 hover:text-red-400 flex items-center gap-2">
                 <i class="fa-solid fa-trash-can"></i>
-                <span>Clear All</span>
+                <span>Clear All (DB + Chat)</span>
             </button>
         </div>
     </div>
@@ -109,14 +61,15 @@
     <!-- Main Chat -->
     <div class="flex-1 flex flex-col">
         <div class="h-14 border-b border-gray-800 flex items-center px-6 justify-between bg-gray-900">
-            <span id="session-title" class="font-semibold text-lg">New Conversation</span>
+            <span id="session-title" class="font-semibold text-lg">New Conversation • Vector RAG Active</span>
+            <button onclick="loadSidebar()" class="text-xs px-3 py-1 bg-gray-800 rounded">↻ Refresh Clips</button>
         </div>
 
         <div id="chat" class="flex-1 overflow-y-auto p-6 space-y-6 bg-gray-950"></div>
 
         <div class="p-5 border-t border-gray-800 bg-gray-900">
             <div class="flex gap-3">
-                <input id="input" type="text" placeholder="Type your message..."
+                <input id="input" type="text" placeholder="Ask anything — your documents are now in memory..."
                        class="flex-1 bg-gray-800 border border-gray-700 focus:border-blue-500 rounded-3xl px-6 py-4 text-white outline-none">
                 <button onclick="sendMessage()" 
                         class="bg-blue-600 hover:bg-blue-700 w-12 h-12 rounded-3xl flex items-center justify-center text-white">
@@ -126,119 +79,6 @@
         </div>
     </div>
 
-    <script>
-        const chat = document.getElementById('chat');
-        const input = document.getElementById('input');
-
-        function addMessage(text, type) {
-            const div = document.createElement('div');
-            div.className = `flex ${type === 'user' ? 'justify-end' : 'justify-start'} message`;
-            div.innerHTML = `
-                <div class="${type === 'user' ? 'chat-bubble-user' : 'chat-bubble-ai'} px-5 py-3.5 max-w-[80%]">
-                    ${text}
-                </div>`;
-            chat.appendChild(div);
-            chat.scrollTop = chat.scrollHeight;
-            return div;
-        }
-
-        function showThinkingAnimation(aiDiv, phase) {
-            if (phase === 'thinking') {
-                aiDiv.innerHTML = `
-                    <div class="thinking-container">
-                        <div class="thinking-orb">
-                            <div class="orb-ring w-[32px] h-[32px]"></div>
-                            <div class="orb-ring w-[32px] h-[32px]"></div>
-                            <div class="orb-ring w-[32px] h-[32px]"></div>
-                            <div class="orb-core"></div>
-                        </div>
-                        <div class="thinking-text">Torii Agents thinking</div>
-                    </div>`;
-            } 
-            else if (phase === 'reflecting') {
-                aiDiv.innerHTML = `
-                    <div class="thinking-container">
-                        <div class="thinking-orb">
-                            <div class="orb-ring w-[32px] h-[32px]"></div>
-                            <div class="orb-ring w-[32px] h-[32px]"></div>
-                            <div class="orb-core" style="background:#14b8a6; box-shadow: 0 0 0 4px rgba(20,184,166,0.2), 0 0 12px rgba(20,184,166,0.5);"></div>
-                        </div>
-                        <div class="thinking-text" style="color:#14b8a6;">Reflecting...</div>
-                    </div>`;
-            } 
-            else if (phase === 'final') {
-                aiDiv.innerHTML = `
-                    <div class="chat-bubble-ai px-5 py-3.5 max-w-[80%]">
-                        <div class="prose text-gray-100"></div>
-                    </div>`;
-            }
-        }
-
-        async function sendMessage() {
-            const message = input.value.trim();
-            if (!message) return;
-
-            addMessage(message, 'user');
-            input.value = '';
-
-            const aiDiv = addMessage('', 'ai');
-
-            try {
-                const response = await fetch('/api/stream', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message })
-                });
-
-                if (!response.ok) throw new Error('Server error');
-
-                const reader = response.body.getReader();
-                const decoder = new TextDecoder();
-                let buffer = '';
-                let finalText = '';
-
-                while (true) {
-                    const { value, done } = await reader.read();
-                    if (done) break;
-
-                    buffer += decoder.decode(value, { stream: true });
-                    const lines = buffer.split('\n');
-                    buffer = lines.pop() || '';
-
-                    for (const line of lines) {
-                        if (!line.startsWith('data: ')) continue;
-
-                        const jsonStr = line.slice(6).trim();
-                        if (!jsonStr) continue;
-
-                        try {
-                            const data = JSON.parse(jsonStr);
-
-                            if (data.phase) {
-                                showThinkingAnimation(aiDiv, data.phase);
-                            } 
-                            else if (data.token) {
-                                finalText += data.token;
-                                const contentDiv = aiDiv.querySelector('.prose');
-                                if (contentDiv) {
-                                    contentDiv.innerHTML = finalText;
-                                }
-                                chat.scrollTop = chat.scrollHeight;
-                            }
-                        } catch (e) {}
-                    }
-                }
-            } catch (error) {
-                console.error(error);
-                aiDiv.innerHTML = `<div class="text-red-400 px-4 py-2">Error connecting to model</div>`;
-            }
-        }
-
-        function newSession() { location.reload(); }
-
-        input.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') sendMessage();
-        });
-    </script>
+    <script src="/static/js/main.js"></script>
 </body>
 </html>
