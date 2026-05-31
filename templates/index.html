@@ -8,11 +8,73 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+        
         body { font-family: 'Inter', system-ui, sans-serif; }
-        .chat-bubble-user { background: #3b82f6; color: white; border-radius: 20px 20px 6px 20px; }
-        .chat-bubble-ai { background: #374151; color: #f3f4f6; border-radius: 20px 20px 20px 6px; }
-        .upload-zone { border: 2px dashed #64748b; transition: all 0.3s; }
-        .upload-zone:hover { border-color: #3b82f6; background: #1e2937; }
+
+        .chat-bubble-user {
+            background: #3b82f6;
+            color: white;
+            border-radius: 20px 20px 6px 20px;
+        }
+        
+        .chat-bubble-ai {
+            background: #374151;
+            color: #f3f4f6;
+            border-radius: 20px 20px 20px 6px;
+        }
+
+        /* === SMALLER GROK-STYLE MULTI-ORB THINKING (3 pulsing dots) === */
+        .thinking-container {
+            padding: 12px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .thinking-dots {
+            display: flex;
+            gap: 6px;
+        }
+
+        .thinking-dot {
+            width: 10px;
+            height: 10px;
+            background: #3b82f6;
+            border-radius: 50%;
+            animation: grokPulse 1.4s ease-in-out infinite;
+            box-shadow: 0 0 8px rgba(59, 130, 246, 0.7);
+        }
+
+        .thinking-dot:nth-child(2) { animation-delay: 150ms; }
+        .thinking-dot:nth-child(3) { animation-delay: 300ms; }
+
+        @keyframes grokPulse {
+            0%, 100% { transform: scale(0.6); opacity: 0.4; }
+            50%      { transform: scale(1.2); opacity: 1; }
+        }
+
+        .thinking-text {
+            font-size: 0.8rem;
+            color: #60a5fa;
+            font-weight: 500;
+        }
+
+        /* Reflecting phase - teal multi-dots */
+        .reflecting-dots .thinking-dot {
+            background: #14b8a6;
+            box-shadow: 0 0 8px rgba(20, 184, 166, 0.7);
+        }
+
+        /* Upload zone styling */
+        .upload-zone {
+            border: 2px dashed #64748b;
+            transition: all 0.3s;
+        }
+        .upload-zone:hover {
+            border-color: #3b82f6;
+            background: #1e2937;
+        }
     </style>
 </head>
 <body class="flex h-screen overflow-hidden bg-slate-950 text-gray-100">
@@ -36,24 +98,23 @@
         <div class="px-5 pt-4 text-xs uppercase tracking-widest text-gray-400">Memory + Documents</div>
         <div id="clips-list" class="flex-1 overflow-y-auto px-4 space-y-2 text-sm"></div>
 
-        <!-- === FULL UPLOAD ZONE (6) === -->
-        <div class="px-5 py-3">
+        <div class="px-5 py-4">
             <div id="upload-zone" class="upload-zone rounded-xl p-6 text-center cursor-pointer">
                 <p class="text-lg mb-2">📄 Drop PDF • Word • TXT • MD</p>
-                <p class="text-xs text-gray-400 mb-3">Your files go straight into the vector database</p>
+                <p class="text-xs text-gray-400 mb-3">Files go straight into the vector database</p>
                 <input type="file" id="fileInput" accept=".pdf,.docx,.txt,.md" class="hidden">
                 <button onclick="document.getElementById('fileInput').click()" 
                         class="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg text-sm">
                     📂 Select file
                 </button>
-                <div class="text-[10px] mt-3 text-gray-500">or drag & drop anywhere on sidebar</div>
+                <div class="text-[10px] mt-3 text-gray-500">or drag & drop here</div>
             </div>
         </div>
 
         <div class="p-4 border-t border-gray-800">
             <button onclick="clearAll()" class="text-xs text-gray-400 hover:text-red-400 flex items-center gap-2">
                 <i class="fa-solid fa-trash-can"></i>
-                <span>Clear All (DB + Chat)</span>
+                <span>Clear All (Chat + Vector DB)</span>
             </button>
         </div>
     </div>
@@ -79,6 +140,186 @@
         </div>
     </div>
 
-    <script src="/static/js/main.js"></script>
+    <script>
+        const chat = document.getElementById('chat');
+        const input = document.getElementById('input');
+
+        function addMessage(text, type) {
+            const div = document.createElement('div');
+            div.className = `flex ${type === 'user' ? 'justify-end' : 'justify-start'} message`;
+            div.innerHTML = `
+                <div class="${type === 'user' ? 'chat-bubble-user' : 'chat-bubble-ai'} px-5 py-3.5 max-w-[80%]">
+                    ${text}
+                </div>`;
+            chat.appendChild(div);
+            chat.scrollTop = chat.scrollHeight;
+            return div;
+        }
+
+        function showThinkingAnimation(aiDiv, phase) {
+            if (phase === 'thinking') {
+                aiDiv.innerHTML = `
+                    <div class="thinking-container">
+                        <div class="thinking-dots">
+                            <div class="thinking-dot"></div>
+                            <div class="thinking-dot"></div>
+                            <div class="thinking-dot"></div>
+                        </div>
+                        <div class="thinking-text">Torii Agents thinking</div>
+                    </div>`;
+            } 
+            else if (phase === 'reflecting') {
+                aiDiv.innerHTML = `
+                    <div class="thinking-container">
+                        <div class="thinking-dots reflecting-dots">
+                            <div class="thinking-dot"></div>
+                            <div class="thinking-dot"></div>
+                            <div class="thinking-dot"></div>
+                        </div>
+                        <div class="thinking-text" style="color:#14b8a6;">Reflecting on documents...</div>
+                    </div>`;
+            } 
+            else if (phase === 'final') {
+                aiDiv.innerHTML = `
+                    <div class="chat-bubble-ai px-5 py-3.5 max-w-[80%]">
+                        <div class="prose text-gray-100"></div>
+                    </div>`;
+            }
+        }
+
+        async function sendMessage() {
+            const message = input.value.trim();
+            if (!message) return;
+
+            addMessage(message, 'user');
+            input.value = '';
+
+            const aiDiv = addMessage('', 'ai');
+
+            try {
+                const response = await fetch('/api/stream', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message })
+                });
+
+                if (!response.ok) throw new Error('Server error');
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let buffer = '';
+                let finalText = '';
+
+                while (true) {
+                    const { value, done } = await reader.read();
+                    if (done) break;
+
+                    buffer += decoder.decode(value, { stream: true });
+                    const lines = buffer.split('\n');
+                    buffer = lines.pop() || '';
+
+                    for (const line of lines) {
+                        if (!line.startsWith('data: ')) continue;
+
+                        const jsonStr = line.slice(6).trim();
+                        if (!jsonStr) continue;
+
+                        try {
+                            const data = JSON.parse(jsonStr);
+
+                            if (data.phase) {
+                                showThinkingAnimation(aiDiv, data.phase);
+                            } 
+                            else if (data.token) {
+                                finalText += data.token;
+                                const contentDiv = aiDiv.querySelector('.prose');
+                                if (contentDiv) {
+                                    contentDiv.innerHTML = finalText.replace(/\n/g, '<br>');
+                                }
+                                chat.scrollTop = chat.scrollHeight;
+                            }
+                        } catch (e) {}
+                    }
+                }
+            } catch (error) {
+                console.error(error);
+                aiDiv.innerHTML = `<div class="text-red-400 px-4 py-2">Error connecting to model</div>`;
+            }
+        }
+
+        function initUpload() {
+            const zone = document.getElementById('upload-zone');
+            const fileInput = document.getElementById('fileInput');
+            if (!zone) return;
+
+            zone.addEventListener('dragover', e => { e.preventDefault(); zone.style.background = '#334155'; });
+            zone.addEventListener('dragleave', () => zone.style.background = '');
+            zone.addEventListener('drop', e => {
+                e.preventDefault();
+                zone.style.background = '';
+                if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+            });
+
+            fileInput.addEventListener('change', e => {
+                if (e.target.files[0]) handleFile(e.target.files[0]);
+            });
+
+            zone.addEventListener('click', () => fileInput.click());
+        }
+
+        async function handleFile(file) {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const status = document.createElement('div');
+            status.className = "text-xs text-blue-400 mt-3";
+            status.textContent = `Uploading ${file.name} → Vector DB...`;
+            document.getElementById('upload-zone').appendChild(status);
+
+            try {
+                const res = await fetch('/api/upload', { method: 'POST', body: formData });
+                const data = await res.json();
+                status.textContent = data.message || "✅ Added to vector memory!";
+                status.className = "text-xs text-emerald-400 mt-3";
+                loadSidebar();
+            } catch (err) {
+                status.textContent = "❌ Upload failed";
+                status.className = "text-xs text-red-400 mt-3";
+            }
+        }
+
+        async function loadSidebar() {
+            try {
+                const clipsRes = await fetch('/api/clips');
+                const clipsData = await clipsRes.json();
+                const cl = document.getElementById('clips-list');
+                if (cl) cl.innerHTML = clipsData.clips.map(c => 
+                    `<div class="bg-gray-800 p-3 rounded-2xl text-xs leading-snug">${c}</div>`
+                ).join('');
+            } catch (e) {}
+        }
+
+        function newSession() { 
+            chat.innerHTML = ''; 
+            document.getElementById('session-title').textContent = 'New Conversation • Vector RAG Active'; 
+        }
+
+        async function clearAll() { 
+            if (confirm('Clear ALL chats + vector database?')) { 
+                await fetch('/api/clear', {method:'POST'}); 
+                chat.innerHTML = ''; 
+                loadSidebar(); 
+            } 
+        }
+
+        window.onload = () => {
+            initUpload();
+            loadSidebar();
+            input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') sendMessage();
+            });
+            console.log('%c✅ ClipperAI with smaller Grok-style multi-orb thinking animation', 'color:#22d3ee;font-weight:bold');
+        };
+    </script>
 </body>
 </html>
