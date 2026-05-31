@@ -44,13 +44,14 @@
             height: calc(100vh - 180px);
         }
 
-        /* Chat bubbles - Grok clean white */
+        /* Chat bubbles */
         .chat-bubble-user {
             background: #3b82f6;
             color: white;
             border-radius: 22px 22px 8px 22px;
             box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
             max-width: 78%;
+            display: inline-block;
         }
         
         .chat-bubble-ai {
@@ -60,9 +61,10 @@
             border-radius: 22px 22px 22px 8px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
             max-width: 78%;
+            display: inline-block;
         }
 
-        /* === SMALLER MULTI-COLOR ORBS - Grok-style, now seamless on white UI === */
+        /* === SMALLER MULTI-COLOR ORBS - seamless on white UI === */
         .multi-orbs {
             display: flex;
             gap: 9px;
@@ -94,12 +96,10 @@
             opacity: 0.6;
         }
 
-        /* Vibrant colors - exactly as you wanted */
-        .orb-1 .orb-core, .orb-1 .orb-ring { background: #3b82f6; color: #3b82f6; }   /* Blue */
-        .orb-2 .orb-core, .orb-2 .orb-ring { background: #22d3ee; color: #22d3ee; }   /* Cyan */
-        .orb-3 .orb-core, .orb-3 .orb-ring { background: #a855f7; color: #a855f7; }   /* Purple */
+        .orb-1 .orb-core, .orb-1 .orb-ring { background: #3b82f6; color: #3b82f6; }
+        .orb-2 .orb-core, .orb-2 .orb-ring { background: #22d3ee; color: #22d3ee; }
+        .orb-3 .orb-core, .orb-3 .orb-ring { background: #a855f7; color: #a855f7; }
 
-        /* Tighter staggered delays for smoother feel */
         .thinking-orb:nth-child(1) .orb-ring { animation-delay: 0s; }
         .thinking-orb:nth-child(1) .orb-ring:nth-child(2) { animation-delay: 0.25s; }
         .thinking-orb:nth-child(1) .orb-ring:nth-child(3) { animation-delay: 0.55s; }
@@ -119,15 +119,24 @@
             font-weight: 600;
         }
 
-        /* FIXED: AI text now wraps horizontally (no more vertical stacking) */
+        /* === AGGRESSIVE TEXT WRAPPING FIX (this solves the one-word-per-line issue) === */
         .ai-text {
-            white-space: pre-line !important;
+            white-space: normal !important;
             word-break: break-word !important;
             overflow-wrap: break-word !important;
+            word-wrap: break-word !important;
+            hyphens: auto !important;
             line-height: 1.65 !important;
             display: block !important;
             width: 100% !important;
             max-width: 100% !important;
+            padding: 0;
+            margin: 0;
+        }
+
+        .chat-bubble-ai .ai-content,
+        .chat-bubble-ai .ai-text {
+            width: 100% !important;
         }
 
         /* Input bar */
@@ -146,7 +155,6 @@
             background: #f1f5f9;
         }
 
-        /* Scrollbar */
         #chat::-webkit-scrollbar {
             width: 6px;
         }
@@ -196,7 +204,6 @@
 
     <!-- Main Chat Area -->
     <div class="flex-1 flex flex-col">
-        <!-- Top bar -->
         <div class="h-16 border-b flex items-center px-8 bg-white">
             <span id="session-title" class="font-semibold text-xl text-gray-900">New Conversation • Vector RAG Active</span>
             <div class="flex-1"></div>
@@ -206,10 +213,8 @@
             </button>
         </div>
 
-        <!-- Chat messages -->
         <div id="chat" class="flex-1 overflow-y-auto px-8 py-8 space-y-8 chat-container mx-8 mt-6"></div>
 
-        <!-- Input bar -->
         <div class="input-bar p-6">
             <div class="max-w-4xl mx-auto">
                 <div class="flex gap-3 bg-white rounded-3xl border border-gray-200 shadow-inner p-2">
@@ -324,14 +329,13 @@
                                 if (data.phase === 'reflecting') {
                                     showThinkingAnimation(aiBubble, 'reflecting');
                                 } else if (data.token) {
-                                    // Smooth async transition to final text
                                     if (!aiBubble.querySelector('.ai-text')) {
                                         showThinkingAnimation(aiBubble, 'final');
                                     }
                                     aiText += data.token;
                                     const textDiv = aiBubble.querySelector('.ai-text');
                                     if (textDiv) {
-                                        textDiv.textContent = aiText;   // textContent + CSS now forces clean horizontal wrapping
+                                        textDiv.textContent = aiText;   // textContent + aggressive CSS = horizontal wrapping
                                     }
                                     chat.scrollTop = chat.scrollHeight;
                                 }
@@ -391,7 +395,7 @@
                 if (e.target.files[0]) handleFile(e.target.files[0]);
             });
 
-            console.log('%c✅ Full Grok-style UI fixed: smaller seamless orbs + perfect horizontal text wrapping + smooth async streaming!', 'color:#3b82f6;font-weight:bold');
+            console.log('%c✅ AI text wrapping FIXED - now fully horizontal!', 'color:#3b82f6;font-weight:bold');
         };
 
         async function handleFile(file) {
