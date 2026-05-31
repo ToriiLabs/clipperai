@@ -23,7 +23,7 @@
             border-radius: 20px 20px 20px 6px;
         }
 
-        /* === CLEAN HORIZONTAL ORBS + TEXT (orbs on the left) === */
+        /* === CLEAN HORIZONTAL ORBS + TEXT (inside the normal AI bubble) === */
         .thinking-container {
             padding: 12px 16px;
             display: flex;
@@ -40,9 +40,6 @@
             position: relative;
             width: 24px;
             height: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
 
         .orb-core {
@@ -120,7 +117,7 @@
 </head>
 <body class="flex h-screen overflow-hidden bg-slate-950 text-gray-100">
 
-    <!-- Sidebar (unchanged) -->
+    <!-- Sidebar -->
     <div class="w-80 bg-gray-900 border-r border-gray-800 flex flex-col">
         <div class="p-5 border-b border-gray-800">
             <h1 class="text-3xl font-semibold tracking-tighter">ToriiLabs</h1>
@@ -270,7 +267,6 @@
             }
         }
 
-        // Upload + sidebar (unchanged)
         function initUpload() {
             const zone = document.getElementById('upload-zone');
             const fileInput = document.getElementById('fileInput');
@@ -342,7 +338,7 @@
             input.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') sendMessage();
             });
-            console.log('%c✅ Clean horizontal orbs + connection fixed', 'color:#22d3ee;font-weight:bold');
+            console.log('%c✅ Orbs + text inside bubble, horizontal', 'color:#22d3ee;font-weight:bold');
         };
     </script>
 </body>
